@@ -1,0 +1,87 @@
+name: bkcrm_flutter
+description: App Flutter de CRM com gerenciamento de tickets e chat moderno
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI Components
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  
+  # State Management
+  provider: ^6.1.1
+  get_it: ^7.6.4
+  
+  # Navigation
+  go_router: ^12.1.1
+  
+  # Network
+  http: ^1.1.0
+  dio: ^5.3.2
+  socket_io_client: ^2.0.3+1
+  
+  # WhatsApp Integration (Evolution API)
+  crypto: ^3.0.3
+  qr_flutter: ^4.1.0
+  path: ^1.8.3
+  
+  # Storage
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Utils
+  intl: ^0.18.1
+  uuid: ^4.1.0
+  equatable: ^2.0.5
+  
+  # AI Integration
+  google_generative_ai: ^0.2.2
+  
+  # Database (Supabase)
+  supabase_flutter: ^2.3.4
+  
+  # Icons
+  phosphor_flutter: ^2.0.1
+  
+  # Animation
+  lottie: ^2.7.0
+  animate_do: ^3.1.2
+  
+  # Image
+  cached_network_image: ^3.3.0
+  image_picker: ^1.0.4
+  
+  # Emoji Picker
+  emoji_picker_flutter: ^2.0.0
+  
+  # PDF Generation
+  pdf: ^3.10.7
+  printing: ^5.12.0
+  path_provider: ^2.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+  
+  fonts:
+    - family: Inter
+      fonts:

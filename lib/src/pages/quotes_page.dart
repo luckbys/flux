@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../stores/quote_store.dart';
@@ -23,32 +22,33 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   bool _isGridView = false;
-  
+
   // Filtros avançados
   String? _selectedStatusFilter;
   DateTimeRange? _selectedDateRange;
   double? _minValue;
   double? _maxValue;
-  
+
   // Ordenação
   String _sortBy = 'date'; // 'date', 'value', 'client', 'status'
   bool _sortAscending = false;
-  
+
   // Busca avançada
   String _searchQuery = '';
   bool _isAdvancedSearch = false;
   final TextEditingController _clientSearchController = TextEditingController();
   final TextEditingController _minValueController = TextEditingController();
   final TextEditingController _maxValueController = TextEditingController();
-  
+
   // Pull to refresh
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
-  
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 7, vsync: this);
-    
+
     // Carregar orçamentos ao inicializar
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<QuoteStore>().loadQuotes();
@@ -69,7 +69,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
-    
+
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
@@ -197,9 +197,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 child: Text(
                   'Orçamentos',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppTheme.getTextColor(context),
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: AppTheme.getTextColor(context),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
             ],
@@ -208,8 +208,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
           Text(
             'Gerencie propostas',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.textColor.withOpacity(0.7),
-            ),
+                  color: AppTheme.textColor.withOpacity(0.7),
+                ),
           ),
         ],
       ),
@@ -220,7 +220,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     return Consumer<QuoteStore>(
       builder: (context, quoteStore, child) {
         final stats = quoteStore.quoteStats;
-        
+
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -229,18 +229,22 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               Text(
                 'Estatísticas',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.getTextColor(context),
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: AppTheme.getTextColor(context),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 12),
-              _buildSidebarStatItem('Total', stats['total'].toString(), Icons.receipt_long, AppTheme.primaryColor),
+              _buildSidebarStatItem('Total', stats['total'].toString(),
+                  Icons.receipt_long, AppTheme.primaryColor),
               const SizedBox(height: 8),
-              _buildSidebarStatItem('Pendentes', stats['pending'].toString(), Icons.pending, AppTheme.warningColor),
+              _buildSidebarStatItem('Pendentes', stats['pending'].toString(),
+                  Icons.pending, AppTheme.warningColor),
               const SizedBox(height: 8),
-              _buildSidebarStatItem('Aprovados', stats['approved'].toString(), Icons.check_circle, AppTheme.successColor),
+              _buildSidebarStatItem('Aprovados', stats['approved'].toString(),
+                  Icons.check_circle, AppTheme.successColor),
               const SizedBox(height: 8),
-              _buildSidebarStatItem('Rejeitados', stats['rejected'].toString(), Icons.cancel, AppTheme.errorColor),
+              _buildSidebarStatItem('Rejeitados', stats['rejected'].toString(),
+                  Icons.cancel, AppTheme.errorColor),
             ],
           ),
         );
@@ -248,7 +252,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSidebarStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildSidebarStatItem(
+      String label, String value, IconData icon, Color color) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.all(16),
@@ -283,19 +288,19 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 Text(
                   value,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textColor.withValues(alpha: 0.7),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: AppTheme.textColor.withValues(alpha: 0.7),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -314,40 +319,54 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
           Text(
             'Filtros Rápidos',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppTheme.textColor,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: AppTheme.textColor,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 12),
           _buildSidebarFilterItem('Todos', null, Icons.list),
           _buildSidebarFilterItem('Rascunhos', QuoteStatus.draft, Icons.edit),
-          _buildSidebarFilterItem('Pendentes', QuoteStatus.pending, Icons.pending),
-          _buildSidebarFilterItem('Aprovados', QuoteStatus.approved, Icons.check_circle),
-          _buildSidebarFilterItem('Rejeitados', QuoteStatus.rejected, Icons.cancel),
-          _buildSidebarFilterItem('Expirados', null, Icons.schedule, showExpired: true),
-          _buildSidebarFilterItem('Convertidos', QuoteStatus.converted, Icons.trending_up),
+          _buildSidebarFilterItem(
+              'Pendentes', QuoteStatus.pending, Icons.pending),
+          _buildSidebarFilterItem(
+              'Aprovados', QuoteStatus.approved, Icons.check_circle),
+          _buildSidebarFilterItem(
+              'Rejeitados', QuoteStatus.rejected, Icons.cancel),
+          _buildSidebarFilterItem('Expirados', null, Icons.schedule,
+              showExpired: true),
+          _buildSidebarFilterItem(
+              'Convertidos', QuoteStatus.converted, Icons.trending_up),
         ],
       ),
     );
   }
 
-  Widget _buildSidebarFilterItem(String label, QuoteStatus? status, IconData icon, {bool showExpired = false}) {
-    final isSelected = _tabController.index == _getTabIndex(status, showExpired);
-    
+  Widget _buildSidebarFilterItem(
+      String label, QuoteStatus? status, IconData icon,
+      {bool showExpired = false}) {
+    final isSelected =
+        _tabController.index == _getTabIndex(status, showExpired);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.12) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.primaryColor.withOpacity(0.12)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected ? Border.all(color: AppTheme.primaryColor.withOpacity(0.3), width: 1.5) : null,
+          border: isSelected
+              ? Border.all(
+                  color: AppTheme.primaryColor.withOpacity(0.3), width: 1.5)
+              : null,
         ),
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
-            onTap: () => _tabController.animateTo(_getTabIndex(status, showExpired)),
+            onTap: () =>
+                _tabController.animateTo(_getTabIndex(status, showExpired)),
             borderRadius: BorderRadius.circular(12),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -356,7 +375,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: isSelected 
+                      color: isSelected
                           ? AppTheme.primaryColor.withOpacity(0.2)
                           : AppTheme.textColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -364,7 +383,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     child: Icon(
                       icon,
                       size: 16,
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textColor.withValues(alpha: 0.7),
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : AppTheme.textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -372,10 +393,13 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     child: Text(
                       label,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isSelected ? AppTheme.primaryColor : AppTheme.textColor,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: 14,
-                      ),
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.textColor,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 14,
+                          ),
                     ),
                   ),
                 ],
@@ -391,12 +415,18 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     if (showExpired) return 5;
     if (status == null) return 0;
     switch (status) {
-      case QuoteStatus.draft: return 1;
-      case QuoteStatus.pending: return 2;
-      case QuoteStatus.approved: return 3;
-      case QuoteStatus.rejected: return 4;
-      case QuoteStatus.converted: return 6;
-      case QuoteStatus.expired: return 5;
+      case QuoteStatus.draft:
+        return 1;
+      case QuoteStatus.pending:
+        return 2;
+      case QuoteStatus.approved:
+        return 3;
+      case QuoteStatus.rejected:
+        return 4;
+      case QuoteStatus.converted:
+        return 6;
+      case QuoteStatus.expired:
+        return 5;
     }
   }
 
@@ -406,83 +436,83 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       child: Column(
         children: [
           SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor,
-                      AppTheme.primaryColor.darken(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
+            width: double.infinity,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryColor,
+                    AppTheme.primaryColor.darken(0.1),
                   ],
                 ),
-                child: ElevatedButton.icon(
-                  onPressed: () => _navigateToQuoteForm(),
-                  icon: const Icon(Icons.add_circle, size: 20),
-                  label: const Text(
-                    'Novo Orçamento',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () => _navigateToQuoteForm(),
+                icon: const Icon(Icons.add_circle, size: 20),
+                label: const Text(
+                  'Novo Orçamento',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
+          ),
           const SizedBox(height: 8),
           SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
-                    width: 1.5,
+            width: double.infinity,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: OutlinedButton.icon(
+                onPressed: () => _showFilterDialog(),
+                icon: const Icon(
+                  Icons.tune,
+                  size: 18,
+                  color: AppTheme.primaryColor,
+                ),
+                label: const Text(
+                  'Filtros Avançados',
+                  style: TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
                 ),
-                child: OutlinedButton.icon(
-                  onPressed: () => _showFilterDialog(),
-                  icon: Icon(
-                    Icons.tune,
-                    size: 18,
-                    color: AppTheme.primaryColor,
-                  ),
-                  label: Text(
-                    'Filtros Avançados',
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor.withOpacity(0.05),
-                    side: BorderSide.none,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor.withOpacity(0.05),
+                  side: BorderSide.none,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -491,7 +521,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildDesktopHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(color: AppTheme.borderColor, width: 1),
@@ -516,7 +546,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: _isAdvancedSearch 
+                      hintText: _isAdvancedSearch
                           ? 'Busca avançada ativa - use os filtros abaixo'
                           : '🔍 Buscar por cliente, descrição ou número do orçamento...',
                       hintStyle: TextStyle(
@@ -530,7 +560,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          _isAdvancedSearch ? Icons.manage_search : Icons.search,
+                          _isAdvancedSearch
+                              ? Icons.manage_search
+                              : Icons.search,
                           color: AppTheme.primaryColor,
                           size: 20,
                         ),
@@ -549,7 +581,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                               },
                               icon: Icon(
                                 Icons.clear,
-                                color: AppTheme.getTextColor(context).withOpacity(0.6),
+                                color: AppTheme.getTextColor(context)
+                                    .withOpacity(0.6),
                                 size: 20,
                               ),
                             ),
@@ -557,10 +590,15 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                             onPressed: _toggleAdvancedSearch,
                             icon: Icon(
                               _isAdvancedSearch ? Icons.search_off : Icons.tune,
-                              color: _isAdvancedSearch ? AppTheme.primaryColor : AppTheme.getTextColor(context).withOpacity(0.6),
+                              color: _isAdvancedSearch
+                                  ? AppTheme.primaryColor
+                                  : AppTheme.getTextColor(context)
+                                      .withOpacity(0.6),
                               size: 20,
                             ),
-                            tooltip: _isAdvancedSearch ? 'Busca simples' : 'Busca avançada',
+                            tooltip: _isAdvancedSearch
+                                ? 'Busca simples'
+                                : 'Busca avançada',
                           ),
                         ],
                       ),
@@ -569,7 +607,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: _isAdvancedSearch 
+                          color: _isAdvancedSearch
                               ? AppTheme.primaryColor.withOpacity(0.5)
                               : AppTheme.borderColor.withOpacity(0.3),
                         ),
@@ -577,16 +615,18 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: _isAdvancedSearch 
+                          color: _isAdvancedSearch
                               ? AppTheme.primaryColor.withOpacity(0.5)
                               : AppTheme.borderColor.withOpacity(0.3),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+                        borderSide: const BorderSide(
+                            color: AppTheme.primaryColor, width: 2),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -615,8 +655,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
             ),
             child: IconButton(
-              onPressed: () => context.read<QuoteStore>().loadQuotes(forceRefresh: true),
-              icon: Icon(
+              onPressed: () =>
+                  context.read<QuoteStore>().loadQuotes(forceRefresh: true),
+              icon: const Icon(
                 Icons.refresh,
                 color: AppTheme.primaryColor,
               ),
@@ -632,7 +673,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildDesktopToolbar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(color: AppTheme.borderColor, width: 1),
@@ -646,9 +687,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               return Text(
                 currentTab,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppTheme.getTextColor(context),
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: AppTheme.getTextColor(context),
+                      fontWeight: FontWeight.w600,
+                    ),
               );
             },
           ),
@@ -660,18 +701,19 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+                border:
+                    Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.filter_alt,
                     size: 16,
                     color: AppTheme.primaryColor,
                   ),
                   const SizedBox(width: 4),
-                  Text(
+                  const Text(
                     'Filtros Ativos',
                     style: TextStyle(
                       color: AppTheme.primaryColor,
@@ -682,7 +724,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: _clearAllFilters,
-                    child: Icon(
+                    child: const Icon(
                       Icons.close,
                       size: 16,
                       color: AppTheme.primaryColor,
@@ -737,10 +779,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
 
   bool _hasActiveFilters() {
     return _selectedStatusFilter != null ||
-           _selectedDateRange != null ||
-           _minValue != null ||
-           _maxValue != null ||
-           _searchQuery.isNotEmpty;
+        _selectedDateRange != null ||
+        _minValue != null ||
+        _maxValue != null ||
+        _searchQuery.isNotEmpty;
   }
 
   Widget _buildSortButton(String label, String sortBy) {
@@ -750,10 +792,14 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.primaryColor.withOpacity(0.1) : Colors.transparent,
+          color: isActive
+              ? AppTheme.primaryColor.withOpacity(0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isActive ? AppTheme.primaryColor.withOpacity(0.3) : AppTheme.borderColor,
+            color: isActive
+                ? AppTheme.primaryColor.withOpacity(0.3)
+                : AppTheme.borderColor,
           ),
         ),
         child: Row(
@@ -762,7 +808,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
             Text(
               label,
               style: TextStyle(
-                color: isActive ? AppTheme.primaryColor : AppTheme.getTextColor(context),
+                color: isActive
+                    ? AppTheme.primaryColor
+                    : AppTheme.getTextColor(context),
                 fontSize: 12,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -824,21 +872,29 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
 
   String _getCurrentTabLabel() {
     switch (_tabController.index) {
-      case 0: return 'Todos os Orçamentos';
-      case 1: return 'Rascunhos';
-      case 2: return 'Pendentes';
-      case 3: return 'Aprovados';
-      case 4: return 'Rejeitados';
-      case 5: return 'Expirados';
-      case 6: return 'Convertidos';
-      default: return 'Orçamentos';
+      case 0:
+        return 'Todos os Orçamentos';
+      case 1:
+        return 'Rascunhos';
+      case 2:
+        return 'Pendentes';
+      case 3:
+        return 'Aprovados';
+      case 4:
+        return 'Rejeitados';
+      case 5:
+        return 'Expirados';
+      case 6:
+        return 'Convertidos';
+      default:
+        return 'Orçamentos';
     }
   }
 
   Widget _buildHeader() {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
-    
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 32 : 24),
       decoration: BoxDecoration(
@@ -888,19 +944,19 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 Text(
                   'Orçamentos',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    color: AppTheme.getTextColor(context),
-                    fontWeight: FontWeight.bold,
-                    fontSize: isDesktop ? 28 : 24,
-                  ),
+                        color: AppTheme.getTextColor(context),
+                        fontWeight: FontWeight.bold,
+                        fontSize: isDesktop ? 28 : 24,
+                      ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Gerencie seus orçamentos e propostas comerciais',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppTheme.getTextColor(context).withOpacity(0.7),
-                    fontSize: isDesktop ? 16 : 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: AppTheme.getTextColor(context).withOpacity(0.7),
+                        fontSize: isDesktop ? 16 : 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -942,7 +998,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               color: AppTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.receipt_long,
               size: 20,
               color: AppTheme.primaryColor,
@@ -953,10 +1009,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
             child: Text(
               'Orçamentos',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.textColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+                    color: AppTheme.textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
             ),
           ),
           // Estatísticas compactas
@@ -965,9 +1021,11 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               final stats = quoteStore.quoteStats;
               return Row(
                 children: [
-                  _buildCompactStat('Total', stats['total'].toString(), AppTheme.primaryColor),
+                  _buildCompactStat('Total', stats['total'].toString(),
+                      AppTheme.primaryColor),
                   const SizedBox(width: 12),
-                  _buildCompactStat('Pendentes', stats['pending'].toString(), AppTheme.warningColor),
+                  _buildCompactStat('Pendentes', stats['pending'].toString(),
+                      AppTheme.warningColor),
                 ],
               );
             },
@@ -1013,7 +1071,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     return Consumer<QuoteStore>(
       builder: (context, quoteStore, child) {
         final stats = quoteStore.quoteStats;
-        
+
         return Row(
           children: [
             Expanded(
@@ -1048,7 +1106,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String label, String value, IconData icon, Color color) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(20),
@@ -1086,19 +1145,19 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
           Text(
             value,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.getTextColor(context).withOpacity(0.8),
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+                  color: AppTheme.getTextColor(context).withOpacity(0.8),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
           ),
         ],
       ),
@@ -1109,7 +1168,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
     final isTablet = screenWidth > 768;
-    
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 32 : 20),
       decoration: BoxDecoration(
@@ -1122,44 +1181,46 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: isDesktop ? Row(
-        children: [
-          Expanded(
-            child: _buildEnhancedSearchField(),
-          ),
-          const SizedBox(width: 20),
-          _buildEnhancedFilterButton(),
-          const SizedBox(width: 16),
-          _buildEnhancedRefreshButton(),
-        ],
-      ) : Column(
-        children: [
-          _buildEnhancedSearchField(),
-          const SizedBox(height: 16),
-          if (isTablet)
-            Row(
+      child: isDesktop
+          ? Row(
               children: [
-                Expanded(child: _buildEnhancedFilterButton()),
+                Expanded(
+                  child: _buildEnhancedSearchField(),
+                ),
+                const SizedBox(width: 20),
+                _buildEnhancedFilterButton(),
                 const SizedBox(width: 16),
-                Expanded(child: _buildEnhancedRefreshButton()),
+                _buildEnhancedRefreshButton(),
               ],
             )
-          else
-            Column(
+          : Column(
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: _buildEnhancedFilterButton(),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: _buildEnhancedRefreshButton(),
-                ),
+                _buildEnhancedSearchField(),
+                const SizedBox(height: 16),
+                if (isTablet)
+                  Row(
+                    children: [
+                      Expanded(child: _buildEnhancedFilterButton()),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildEnhancedRefreshButton()),
+                    ],
+                  )
+                else
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: _buildEnhancedFilterButton(),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: _buildEnhancedRefreshButton(),
+                      ),
+                    ],
+                  ),
               ],
             ),
-        ],
-      ),
     );
   }
 
@@ -1217,7 +1278,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
         style: const TextStyle(
           fontSize: 14,
@@ -1241,7 +1303,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       ),
       child: IconButton(
         onPressed: () => _showFilterDialog(),
-        icon: Icon(
+        icon: const Icon(
           Icons.tune,
           color: AppTheme.primaryColor,
           size: 20,
@@ -1267,7 +1329,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         ],
       ),
       child: IconButton(
-        onPressed: () => context.read<QuoteStore>().loadQuotes(forceRefresh: true),
+        onPressed: () =>
+            context.read<QuoteStore>().loadQuotes(forceRefresh: true),
         icon: const Icon(
           Icons.refresh,
           color: Colors.white,
@@ -1310,7 +1373,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
               ),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.search_rounded,
               color: AppTheme.primaryColor,
               size: 22,
@@ -1320,17 +1383,21 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
           fillColor: AppTheme.getCardColor(context),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.2)),
+            borderSide:
+                BorderSide(color: AppTheme.borderColor.withOpacity(0.2)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: AppTheme.borderColor.withOpacity(0.2)),
+            borderSide:
+                BorderSide(color: AppTheme.borderColor.withOpacity(0.2)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: AppTheme.primaryColor, width: 2.5),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 2.5),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         ),
         style: const TextStyle(
           fontSize: 15,
@@ -1361,12 +1428,12 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       ),
       child: OutlinedButton.icon(
         onPressed: () => _showFilterDialog(),
-        icon: Icon(
+        icon: const Icon(
           Icons.tune_rounded,
           size: 20,
           color: AppTheme.primaryColor,
         ),
-        label: Text(
+        label: const Text(
           'Filtros',
           style: TextStyle(
             color: AppTheme.primaryColor,
@@ -1405,7 +1472,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         ],
       ),
       child: ElevatedButton.icon(
-        onPressed: () => context.read<QuoteStore>().loadQuotes(forceRefresh: true),
+        onPressed: () =>
+            context.read<QuoteStore>().loadQuotes(forceRefresh: true),
         icon: const Icon(
           Icons.refresh_rounded,
           color: Colors.white,
@@ -1431,12 +1499,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     );
   }
 
-
-
   Widget _buildTabBar() {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
-    
+
     return Container(
       color: AppTheme.getCardColor(context),
       child: TabBar(
@@ -1500,26 +1566,31 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         }
 
         var quotes = quoteStore.quotes;
-        
+
         // Aplicar filtros
         if (status != null) {
           quotes = quotes.where((q) => q.status == status).toList();
         }
-        
+
         if (showExpired) {
           quotes = quotes.where((q) => q.isExpired).toList();
         }
 
         // Aplicar filtros avançados
         if (_selectedStatusFilter != null) {
-          quotes = quotes.where((q) => q.status.name == _selectedStatusFilter).toList();
+          quotes = quotes
+              .where((q) => q.status.name == _selectedStatusFilter)
+              .toList();
         }
 
         if (_selectedDateRange != null) {
-          quotes = quotes.where((q) => 
-            q.createdAt.isAfter(_selectedDateRange!.start.subtract(const Duration(days: 1))) &&
-            q.createdAt.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)))
-          ).toList();
+          quotes = quotes
+              .where((q) =>
+                  q.createdAt.isAfter(_selectedDateRange!.start
+                      .subtract(const Duration(days: 1))) &&
+                  q.createdAt.isBefore(
+                      _selectedDateRange!.end.add(const Duration(days: 1))))
+              .toList();
         }
 
         if (_minValue != null) {
@@ -1531,11 +1602,17 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         }
 
         if (_searchQuery.isNotEmpty) {
-          quotes = quotes.where((q) => 
-            q.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            q.customer.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            (q.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)
-          ).toList();
+          quotes = quotes
+              .where((q) =>
+                  q.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                  q.customer.name
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase()) ||
+                  (q.description
+                          ?.toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ??
+                      false))
+              .toList();
         }
 
         // Aplicar ordenação
@@ -1567,7 +1644,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
 
         final screenWidth = MediaQuery.of(context).size.width;
         final isDesktop = screenWidth > 1200;
-        
+
         return RefreshIndicator(
           key: _refreshIndicatorKey,
           onRefresh: _onRefresh,
@@ -1582,7 +1659,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildListView(List<Quote> quotes) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
-    
+
     return ListView.builder(
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       itemCount: quotes.length,
@@ -1657,27 +1734,28 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         } else if (direction == DismissDirection.endToStart) {
           // Confirmar exclusão
           return await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Confirmar Exclusão'),
-              content: Text(
-                'Tem certeza que deseja excluir o orçamento #${quote.id}?\n\nEsta ação não pode ser desfeita.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.errorColor,
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Confirmar Exclusão'),
+                  content: Text(
+                    'Tem certeza que deseja excluir o orçamento #${quote.id}?\n\nEsta ação não pode ser desfeita.',
                   ),
-                  child: const Text('Excluir'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.errorColor,
+                      ),
+                      child: const Text('Excluir'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ) ?? false;
+              ) ??
+              false;
         }
         return false;
       },
@@ -1696,7 +1774,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildGridView(List<Quote> quotes) {
     return GridView.builder(
       padding: const EdgeInsets.all(32),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 400,
         childAspectRatio: 1.1,
         crossAxisSpacing: 24,
@@ -1730,9 +1808,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     child: Text(
                       quote.title,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.textColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                            color: AppTheme.textColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1745,8 +1823,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 Text(
                   quote.description!,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textColor.withValues(alpha: 0.7),
-                  ),
+                        color: AppTheme.textColor.withValues(alpha: 0.7),
+                      ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1765,8 +1843,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     child: Text(
                       quote.customer.name,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textColor,
-                      ),
+                            color: AppTheme.textColor,
+                          ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -1785,23 +1863,24 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   Text(
                     _formatDate(quote.createdAt),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textColor.withValues(alpha: 0.7),
-                    ),
+                          color: AppTheme.textColor.withValues(alpha: 0.7),
+                        ),
                   ),
                   const Spacer(),
                   Text(
                     'R\$ ${quote.total.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ],
               ),
               if (quote.isExpired) ...[
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -1818,9 +1897,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                       Text(
                         'Expirado',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.errorColor,
-                          fontSize: 10,
-                        ),
+                              color: AppTheme.errorColor,
+                              fontSize: 10,
+                            ),
                       ),
                     ],
                   ),
@@ -1856,17 +1935,24 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                       children: [
                         Text(
                           quote.title,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppTheme.getTextColor(context),
-                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                color: AppTheme.getTextColor(context),
+                              ),
                         ),
                         if (quote.description != null) ...[
                           const SizedBox(height: 4),
                           Text(
                             quote.description!,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.getTextColor(context).withOpacity(0.7),
-                  ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppTheme.getTextColor(context)
+                                      .withOpacity(0.7),
+                                ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1895,8 +1981,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     child: Text(
                       quote.customer.name,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.getTextColor(context),
-                        ),
+                            color: AppTheme.getTextColor(context),
+                          ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -1910,23 +1996,25 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   Text(
                     _formatDate(quote.createdAt),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.getTextColor(context).withOpacity(0.7),
-                      ),
+                          color:
+                              AppTheme.getTextColor(context).withOpacity(0.7),
+                        ),
                   ),
                   const SizedBox(width: 16),
                   Text(
                     'R\$ ${quote.total.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                         color: AppTheme.primaryColor,
-                         fontWeight: FontWeight.bold,
-                       ),
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ],
               ),
               if (quote.isExpired) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppTheme.errorColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -1943,9 +2031,9 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                       Text(
                         'Expirado',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.errorColor,
-                          fontWeight: FontWeight.w500,
-                        ),
+                              color: AppTheme.errorColor,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
                     ],
                   ),
@@ -1961,7 +2049,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildStatusChip(QuoteStatus status) {
     Color color;
     String label;
-    
+
     switch (status) {
       case QuoteStatus.draft:
         color = AppTheme.getTextColor(context).withOpacity(0.7);
@@ -1988,7 +2076,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         label = 'Expirado';
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -1998,10 +2086,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w500,
-          fontSize: 10,
-        ),
+              color: color,
+              fontWeight: FontWeight.w500,
+              fontSize: 10,
+            ),
         overflow: TextOverflow.ellipsis,
       ),
     );
@@ -2010,7 +2098,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
   Widget _buildPriorityChip(QuotePriority priority) {
     Color color;
     IconData icon;
-    
+
     switch (priority) {
       case QuotePriority.low:
         color = AppTheme.successColor;
@@ -2029,7 +2117,7 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         icon = Icons.priority_high;
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
@@ -2090,30 +2178,30 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
 
   List<Quote> _applySorting(List<Quote> quotes) {
     final sortedQuotes = List<Quote>.from(quotes);
-    
+
     switch (_sortBy) {
       case 'date':
-        sortedQuotes.sort((a, b) => _sortAscending 
+        sortedQuotes.sort((a, b) => _sortAscending
             ? a.createdAt.compareTo(b.createdAt)
             : b.createdAt.compareTo(a.createdAt));
         break;
       case 'value':
-        sortedQuotes.sort((a, b) => _sortAscending 
+        sortedQuotes.sort((a, b) => _sortAscending
             ? a.total.compareTo(b.total)
             : b.total.compareTo(a.total));
         break;
       case 'client':
-        sortedQuotes.sort((a, b) => _sortAscending 
+        sortedQuotes.sort((a, b) => _sortAscending
             ? a.customer.name.compareTo(b.customer.name)
             : b.customer.name.compareTo(a.customer.name));
         break;
       case 'status':
-        sortedQuotes.sort((a, b) => _sortAscending 
+        sortedQuotes.sort((a, b) => _sortAscending
             ? a.status.index.compareTo(b.status.index)
             : b.status.index.compareTo(a.status.index));
         break;
     }
-    
+
     return sortedQuotes;
   }
 
@@ -2148,8 +2236,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppTheme.primaryColor,
-            ),
+                  primary: AppTheme.primaryColor,
+                ),
           ),
           child: child!,
         );
@@ -2236,8 +2324,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
             Text(
               'Ações para Orçamento #${quote.id}',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 20),
             _buildActionTile(
@@ -2456,11 +2544,11 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.tune, color: AppTheme.primaryColor),
-            const SizedBox(width: 8),
-            const Text('Filtros Avançados'),
+            SizedBox(width: 8),
+            Text('Filtros Avançados'),
           ],
         ),
         content: SizedBox(
@@ -2470,7 +2558,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Status Filter
-              const Text('Status:', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Status:',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedStatusFilter,
@@ -2485,10 +2574,12 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   'rejected',
                   'expired',
                   'converted'
-                ].map((status) => DropdownMenuItem(
-                  value: status,
-                  child: Text(_getStatusLabel(status)),
-                )).toList(),
+                ]
+                    .map((status) => DropdownMenuItem(
+                          value: status,
+                          child: Text(_getStatusLabel(status)),
+                        ))
+                    .toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedStatusFilter = value;
@@ -2496,9 +2587,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Date Range
-              const Text('Período:', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Período:',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -2527,9 +2619,10 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Value Range
-              const Text('Faixa de Valor:', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Faixa de Valor:',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -2591,11 +2684,11 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.file_download, color: AppTheme.primaryColor),
-            const SizedBox(width: 8),
-            const Text('Exportar Orçamentos'),
+            SizedBox(width: 8),
+            Text('Exportar Orçamentos'),
           ],
         ),
         content: Column(
@@ -2633,13 +2726,20 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
 
   String _getStatusLabel(String status) {
     switch (status) {
-      case 'draft': return 'Rascunho';
-      case 'pending': return 'Pendente';
-      case 'approved': return 'Aprovado';
-      case 'rejected': return 'Rejeitado';
-      case 'expired': return 'Expirado';
-      case 'converted': return 'Convertido';
-      default: return status;
+      case 'draft':
+        return 'Rascunho';
+      case 'pending':
+        return 'Pendente';
+      case 'approved':
+        return 'Aprovado';
+      case 'rejected':
+        return 'Rejeitado';
+      case 'expired':
+        return 'Expirado';
+      case 'converted':
+        return 'Convertido';
+      default:
+        return status;
     }
   }
 
@@ -2654,14 +2754,14 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.tune,
                 color: AppTheme.primaryColor,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Filtros de Busca Avançada',
                 style: TextStyle(
@@ -2681,7 +2781,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   children: [
                     const Text(
                       'Cliente:',
-                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     TextField(
@@ -2691,7 +2792,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         isDense: true,
                       ),
                       onChanged: (value) => _performAdvancedSearch(),
@@ -2706,7 +2808,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   children: [
                     const Text(
                       'Status:',
-                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     DropdownButtonFormField<String>(
@@ -2715,7 +2818,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         isDense: true,
                       ),
                       hint: const Text('Todos'),
@@ -2726,10 +2830,12 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                         'rejected',
                         'expired',
                         'converted'
-                      ].map((status) => DropdownMenuItem(
-                        value: status,
-                        child: Text(_getStatusLabel(status)),
-                      )).toList(),
+                      ]
+                          .map((status) => DropdownMenuItem(
+                                value: status,
+                                child: Text(_getStatusLabel(status)),
+                              ))
+                          .toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedStatusFilter = value;
@@ -2751,7 +2857,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   children: [
                     const Text(
                       'Valor mín:',
-                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     TextField(
@@ -2762,7 +2869,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         isDense: true,
                       ),
                       keyboardType: TextInputType.number,
@@ -2781,7 +2889,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                   children: [
                     const Text(
                       'Valor máx:',
-                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     TextField(
@@ -2792,7 +2901,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         isDense: true,
                       ),
                       keyboardType: TextInputType.number,
@@ -2820,7 +2930,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                     style: const TextStyle(fontSize: 12),
                   ),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
               ),
@@ -2833,7 +2944,8 @@ class _QuotesPageState extends State<QuotesPage> with TickerProviderStateMixin {
                 icon: const Icon(Icons.clear_all, size: 16),
                 label: const Text('Limpar', style: TextStyle(fontSize: 12)),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
               ),
             ],
@@ -2958,11 +3070,11 @@ class _FilterDialogState extends State<_FilterDialog> {
         ElevatedButton(
           onPressed: () {
             context.read<QuoteStore>().setAdvancedFilters(
-              status: _selectedStatus,
-              minValue: null,
-              maxValue: null,
-              dateRange: null,
-            );
+                  status: _selectedStatus,
+                  minValue: null,
+                  maxValue: null,
+                  dateRange: null,
+                );
             Navigator.of(context).pop();
           },
           child: const Text('Aplicar'),
@@ -2973,13 +3085,20 @@ class _FilterDialogState extends State<_FilterDialog> {
 
   String _getStatusLabel(String status) {
     switch (status) {
-      case 'draft': return 'Rascunho';
-      case 'pending': return 'Pendente';
-      case 'approved': return 'Aprovado';
-      case 'rejected': return 'Rejeitado';
-      case 'expired': return 'Expirado';
-      case 'converted': return 'Convertido';
-      default: return status;
+      case 'draft':
+        return 'Rascunho';
+      case 'pending':
+        return 'Pendente';
+      case 'approved':
+        return 'Aprovado';
+      case 'rejected':
+        return 'Rejeitado';
+      case 'expired':
+        return 'Expirado';
+      case 'converted':
+        return 'Convertido';
+      default:
+        return status;
     }
   }
 

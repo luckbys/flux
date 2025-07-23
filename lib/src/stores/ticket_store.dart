@@ -20,7 +20,7 @@ class TicketStore extends ChangeNotifier {
 
   // Dados
   List<Ticket> _tickets = [];
-  Map<String, List<Message>> _ticketMessages = {};
+  final Map<String, List<Message>> _ticketMessages = {};
   Map<String, int> _ticketStats = {
     'total': 0,
     'open': 0,

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/ticket.dart';
 import '../../models/user.dart' as app_user;
 import '../../models/message.dart';
@@ -32,7 +31,7 @@ class TicketService {
         query = query.eq('ticket_status', _mapStatusToDb(status));
       }
       if (priority != null) {
-        query = query.eq('priority', priority.name);
+        query = query.eq('priority', _mapPriorityToDb(priority));
       }
       if (assignedUserId != null) {
         query = query.eq('assigned_to', assignedUserId);
@@ -90,16 +89,40 @@ class TicketService {
     try {
       AppConfig.log('Criando ticket: $title', tag: 'TicketService');
 
+      // Log dos dados recebidos para debug
+      AppConfig.log('Dados recebidos:', tag: 'TicketService');
+      AppConfig.log('  title: $title', tag: 'TicketService');
+      AppConfig.log('  description: $description', tag: 'TicketService');
+      AppConfig.log('  customerId: $customerId', tag: 'TicketService');
+      AppConfig.log('  priority: $priority', tag: 'TicketService');
+      AppConfig.log('  category: $category', tag: 'TicketService');
+      AppConfig.log('  assignedTo: $assignedTo', tag: 'TicketService');
+
+      final mappedPriority = _mapPriorityToDb(priority);
+      final mappedCategory = _mapCategoryToDb(category);
+
+      // Log dos dados mapeados
+      AppConfig.log('Dados mapeados:', tag: 'TicketService');
+      AppConfig.log('  mappedPriority: $mappedPriority', tag: 'TicketService');
+      AppConfig.log('  mappedCategory: $mappedCategory', tag: 'TicketService');
+
       final ticketData = {
         'title': title,
         'description': description,
         'customer_id': customerId,
-        'priority': priority.name,
-        'category': category.name,
+        'priority': mappedPriority,
+        'category': mappedCategory ?? 'general', // Garantir que nunca seja null
         'ticket_status': 'open',
         'assigned_to': assignedTo,
         'metadata': metadata ?? {},
+        // O campo 'number' será gerado automaticamente pela sequência
       };
+
+      // Log dos dados finais
+      AppConfig.log('Dados finais para inserção: $ticketData',
+          tag: 'TicketService');
+
+      AppConfig.log('Iniciando inserção no banco...', tag: 'TicketService');
 
       final response =
           await _supabaseService.from('tickets').insert(ticketData).select('''
@@ -107,6 +130,9 @@ class TicketService {
             customer:customer_id(id, name, email, avatar_url, role),
             assigned_agent:assigned_to(id, name, email, avatar_url, role)
           ''').single();
+
+      AppConfig.log('Resposta do banco recebida: $response',
+          tag: 'TicketService');
 
       final ticket = _mapTicketFromDb(response);
       AppConfig.log('Ticket criado: ${ticket.id}', tag: 'TicketService');
@@ -145,8 +171,8 @@ class TicketService {
           updates['closed_at'] = DateTime.now().toIso8601String();
         }
       }
-      if (priority != null) updates['priority'] = priority.name;
-      if (category != null) updates['category'] = category.name;
+      if (priority != null) updates['priority'] = _mapPriorityToDb(priority);
+      if (category != null) updates['category'] = _mapCategoryToDb(category);
       if (assignedTo != null) updates['assigned_to'] = assignedTo;
       if (metadata != null) updates['metadata'] = metadata;
 
@@ -363,7 +389,9 @@ class TicketService {
     }
   }
 
-  TicketStatus _mapStatusFromDb(String status) {
+  TicketStatus _mapStatusFromDb(String? status) {
+    if (status == null) return TicketStatus.open;
+
     switch (status) {
       case 'open':
         return TicketStatus.open;
@@ -380,48 +408,272 @@ class TicketService {
     }
   }
 
+  String _mapPriorityToDb(TicketPriority priority) {
+    switch (priority) {
+      case TicketPriority.low:
+        return 'low';
+      case TicketPriority.normal:
+        return 'medium';
+      case TicketPriority.high:
+        return 'high';
+      case TicketPriority.urgent:
+        return 'urgent';
+      default:
+        return 'medium'; // Default para casos inesperados
+    }
+  }
+
+  TicketPriority _mapPriorityFromDb(String? priority) {
+    if (priority == null) return TicketPriority.normal;
+
+    switch (priority) {
+      case 'low':
+        return TicketPriority.low;
+      case 'medium':
+        return TicketPriority.normal;
+      case 'high':
+        return TicketPriority.high;
+      case 'urgent':
+        return TicketPriority.urgent;
+      default:
+        return TicketPriority.normal;
+    }
+  }
+
+  String _mapCategoryToDb(TicketCategory category) {
+    switch (category) {
+      case TicketCategory.technical:
+        return 'technical';
+      case TicketCategory.billing:
+        return 'billing';
+      case TicketCategory.general:
+        return 'general';
+      case TicketCategory.complaint:
+        return 'feature_request'; // Mapeamento temporário
+      case TicketCategory.feature:
+        return 'feature_request';
+      default:
+        return 'general'; // Default para casos inesperados
+    }
+  }
+
+  TicketCategory _mapCategoryFromDb(String? category) {
+    if (category == null) return TicketCategory.general;
+
+    switch (category) {
+      case 'technical':
+        return TicketCategory.technical;
+      case 'billing':
+        return TicketCategory.billing;
+      case 'general':
+        return TicketCategory.general;
+      case 'feature_request':
+        return TicketCategory.feature;
+      case 'bug_report':
+        return TicketCategory.technical;
+      default:
+        return TicketCategory.general;
+    }
+  }
+
   Ticket _mapTicketFromDb(Map<String, dynamic> json) {
-    final customer = json['customer'] != null
-        ? app_user.User.fromJson(json['customer'])
-        : app_user.User(
-            id: json['customer_id'] ?? '',
-            name: 'Cliente',
-            email: 'cliente@email.com',
-            role: app_user.UserRole.customer,
-            status: app_user.UserStatus.offline,
-            createdAt: DateTime.now(),
-          );
+    // Log para debug
+    AppConfig.log('Mapeando ticket do banco:', tag: 'TicketService');
+    AppConfig.log('  json recebido: $json', tag: 'TicketService');
 
-    final assignedAgent = json['assigned_agent'] != null
-        ? app_user.User.fromJson(json['assigned_agent'])
-        : null;
+    try {
+      app_user.User customer;
+      try {
+        customer = json['customer'] != null
+            ? app_user.User.fromJson(json['customer'])
+            : app_user.User(
+                id: json['customer_id']?.toString() ?? '',
+                name: 'Cliente',
+                email: 'cliente@email.com',
+                role: app_user.UserRole.customer,
+                status: app_user.UserStatus.offline,
+                createdAt: DateTime.now(),
+              );
+        AppConfig.log('  customer mapeado: ${customer.name}',
+            tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear customer: $e', tag: 'TicketService');
+        customer = app_user.User(
+          id: json['customer_id']?.toString() ?? '',
+          name: 'Cliente',
+          email: 'cliente@email.com',
+          role: app_user.UserRole.customer,
+          status: app_user.UserStatus.offline,
+          createdAt: DateTime.now(),
+        );
+      }
 
-    return Ticket(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'] ?? '',
-      status: _mapStatusFromDb(json['ticket_status']),
-      priority: TicketPriority.values.firstWhere(
-        (e) => e.name == json['priority'],
-        orElse: () => TicketPriority.normal,
-      ),
-      category: TicketCategory.values.firstWhere(
-        (e) => e.name == json['category'],
-        orElse: () => TicketCategory.general,
-      ),
-      customer: customer,
-      assignedAgent: assignedAgent,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
-          : null,
-      resolvedAt: json['resolved_at'] != null
-          ? DateTime.parse(json['resolved_at'])
-          : null,
-      closedAt:
-          json['closed_at'] != null ? DateTime.parse(json['closed_at']) : null,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-    );
+      app_user.User? assignedAgent;
+      try {
+        assignedAgent = json['assigned_agent'] != null
+            ? app_user.User.fromJson(json['assigned_agent'])
+            : null;
+        AppConfig.log(
+            '  assignedAgent mapeado: ${assignedAgent?.name ?? 'null'}',
+            tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear assignedAgent: $e',
+            tag: 'TicketService');
+        assignedAgent = null;
+      }
+
+      // Log dos campos individuais
+      AppConfig.log('  id: ${json['id']} (tipo: ${json['id'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  title: ${json['title']} (tipo: ${json['title'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  description: ${json['description']} (tipo: ${json['description'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  ticket_status: ${json['ticket_status']} (tipo: ${json['ticket_status'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  priority: ${json['priority']} (tipo: ${json['priority'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  category: ${json['category']} (tipo: ${json['category'].runtimeType})',
+          tag: 'TicketService');
+      AppConfig.log(
+          '  created_at: ${json['created_at']} (tipo: ${json['created_at'].runtimeType})',
+          tag: 'TicketService');
+
+      // Mapear campos com logs detalhados e try-catch individual
+      String id;
+      try {
+        id = json['id']?.toString() ?? '';
+        AppConfig.log('  id mapeado: $id', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear id: $e', tag: 'TicketService');
+        id = '';
+      }
+
+      String title;
+      try {
+        title = json['title']?.toString() ?? '';
+        AppConfig.log('  title mapeado: $title', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear title: $e', tag: 'TicketService');
+        title = '';
+      }
+
+      String description;
+      try {
+        description = json['description']?.toString() ?? '';
+        AppConfig.log('  description mapeado: $description',
+            tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear description: $e', tag: 'TicketService');
+        description = '';
+      }
+
+      TicketStatus status;
+      try {
+        status = _mapStatusFromDb(json['ticket_status']?.toString());
+        AppConfig.log('  status mapeado: $status', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear status: $e', tag: 'TicketService');
+        status = TicketStatus.open;
+      }
+
+      TicketPriority priority;
+      try {
+        priority = _mapPriorityFromDb(json['priority']?.toString());
+        AppConfig.log('  priority mapeado: $priority', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear priority: $e', tag: 'TicketService');
+        priority = TicketPriority.normal;
+      }
+
+      TicketCategory category;
+      try {
+        category = _mapCategoryFromDb(json['category']?.toString());
+        AppConfig.log('  category mapeado: $category', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear category: $e', tag: 'TicketService');
+        category = TicketCategory.general;
+      }
+
+      DateTime createdAt;
+      try {
+        createdAt = json['created_at'] != null
+            ? DateTime.parse(json['created_at'].toString())
+            : DateTime.now();
+        AppConfig.log('  createdAt mapeado: $createdAt', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear createdAt: $e', tag: 'TicketService');
+        createdAt = DateTime.now();
+      }
+
+      DateTime? updatedAt;
+      try {
+        updatedAt = json['updated_at'] != null
+            ? DateTime.parse(json['updated_at'].toString())
+            : null;
+        AppConfig.log('  updatedAt mapeado: $updatedAt', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear updatedAt: $e', tag: 'TicketService');
+        updatedAt = null;
+      }
+
+      DateTime? resolvedAt;
+      try {
+        resolvedAt = json['resolved_at'] != null
+            ? DateTime.parse(json['resolved_at'].toString())
+            : null;
+        AppConfig.log('  resolvedAt mapeado: $resolvedAt',
+            tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear resolvedAt: $e', tag: 'TicketService');
+        resolvedAt = null;
+      }
+
+      DateTime? closedAt;
+      try {
+        closedAt = json['closed_at'] != null
+            ? DateTime.parse(json['closed_at'].toString())
+            : null;
+        AppConfig.log('  closedAt mapeado: $closedAt', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear closedAt: $e', tag: 'TicketService');
+        closedAt = null;
+      }
+
+      Map<String, dynamic> metadata;
+      try {
+        metadata = (json['metadata'] as Map<String, dynamic>?) ?? {};
+        AppConfig.log('  metadata mapeado: $metadata', tag: 'TicketService');
+      } catch (e) {
+        AppConfig.log('  ERRO ao mapear metadata: $e', tag: 'TicketService');
+        metadata = {};
+      }
+
+      return Ticket(
+        id: id,
+        title: title,
+        description: description,
+        status: status,
+        priority: priority,
+        category: category,
+        customer: customer,
+        assignedAgent: assignedAgent,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        resolvedAt: resolvedAt,
+        closedAt: closedAt,
+        metadata: metadata,
+      );
+    } catch (e) {
+      AppConfig.log('Erro ao mapear ticket do banco: $e', tag: 'TicketService');
+      AppConfig.log('  json que causou erro: $json', tag: 'TicketService');
+      rethrow;
+    }
   }
 
   Message _mapMessageFromDb(Map<String, dynamic> json) {

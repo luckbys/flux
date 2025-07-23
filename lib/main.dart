@@ -13,46 +13,33 @@ import 'src/stores/auth_store.dart';
 import 'src/stores/ticket_store.dart';
 import 'src/stores/quote_store.dart';
 import 'src/stores/theme_store.dart';
+import 'src/stores/dashboard_store.dart';
 import 'src/components/auth/auth_wrapper.dart';
-import 'src/config/network_config.dart';
+
 import 'src/config/app_config.dart';
+import 'src/services/network_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Configurar overrides de rede para resolver problemas de DNS no Android
-  NetworkConfig.setupHttpOverrides();
+  NetworkTester.instance.configureHttpOverrides();
 
   // Pré-carregar informações de rede importantes
-  await NetworkConfig.preloadNetworkInfo(AppConfig.supabaseUrl);
+  await NetworkTester.instance.preloadDnsInfo(AppConfig.supabaseUrl);
 
   // Inicializar Hive para armazenamento local
   await Hive.initFlutter();
 
   // Testar conectividade antes de inicializar Supabase
-  final hasInternet = await NetworkTester.instance.testInternetConnectivity();
-  if (!hasInternet) {
-    print('⚠️ Aviso: Sem conectividade com a internet');
-  }
+  final networkTester = NetworkTester.instance;
+  await networkTester.testInternetConnectivity();
 
   // Testar resolução de DNS para o Supabase
-  final hasSupabaseDns = await NetworkTester.instance.testSupabaseDns();
+  final hasSupabaseDns = await networkTester.testSupabaseDns();
   if (!hasSupabaseDns) {
-    print('⚠️ Aviso: Não foi possível resolver o DNS do Supabase');
-    print(
-        '📱 Se estiver no Android, verifique o guia ANDROID_DNS_FIX_GUIDE.md');
-
     // Testar conectividade direta com o Supabase usando IP
-    final canConnectToSupabase = await NetworkTester.instance
-        .testSupabaseConnectivity(AppConfig.supabaseUrl);
-    if (canConnectToSupabase) {
-      print('✅ Conexão com Supabase estabelecida usando método alternativo!');
-    } else {
-      print(
-          '❌ Não foi possível conectar ao Supabase mesmo com método alternativo');
-      print(
-          '📋 Verifique sua conexão de rede e as configurações do aplicativo');
-    }
+    await networkTester.testSupabaseConnectivity(AppConfig.supabaseUrl);
   }
 
   // Inicializar Supabase
@@ -95,9 +82,11 @@ class _BKCRMAppState extends State<BKCRMApp> {
     // Verificar se há problemas de DNS após a inicialização do aplicativo
     final hasSupabaseDns = await NetworkTester.instance.testSupabaseDns();
     if (!hasSupabaseDns) {
-      setState(() {
-        _hasDnsIssue = true;
-      });
+      if (mounted) {
+        setState(() {
+          _hasDnsIssue = true;
+        });
+      }
     }
   }
 
@@ -105,7 +94,9 @@ class _BKCRMAppState extends State<BKCRMApp> {
     // Mostrar o diálogo apenas uma vez após a construção do widget
     if (_hasDnsIssue) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        NetworkTester.instance.showDnsWarningDialog(context);
+        if (mounted) {
+          NetworkTester.instance.showDnsWarningDialog(context);
+        }
       });
     }
   }
@@ -117,6 +108,9 @@ class _BKCRMAppState extends State<BKCRMApp> {
         // Provider para serviços de IA
         Provider<GeminiService>(
           create: (_) => GeminiService(),
+        ),
+        ChangeNotifierProvider<DashboardStore>(
+          create: (_) => DashboardStore(),
         ),
         // Provider para Supabase
         Provider<SupabaseService>(
@@ -185,7 +179,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _setupAnimations();
-    _navigateToLogin();
   }
 
   void _setupAnimations() {
@@ -213,30 +206,55 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
   }
 
-  void _navigateToLogin() {
-    Future.delayed(const Duration(milliseconds: 3000), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
+  late AuthStore _authStore;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _authStore = Provider.of<AuthStore>(context, listen: false);
+    _authStore.addListener(_onAuthStateChanged);
+  }
+
+  void _onAuthStateChanged() {
+    if (mounted) {
+      switch (_authStore.state) {
+        case AuthState.authenticated:
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const AuthWrapper(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+          break;
+        case AuthState.unauthenticated:
+        case AuthState.error:
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const LoginPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+          break;
+        case AuthState.loading:
+        case AuthState.initial:
+          break;
       }
-    });
+    }
   }
 
   @override
+  @override
   void dispose() {
     _animationController.dispose();
+    _authStore.removeListener(_onAuthStateChanged);
     super.dispose();
   }
 
@@ -244,7 +262,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -321,12 +339,12 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: DesignTokens.space48),
                         MicroAnimations.pulse(
-                          child: SizedBox(
+                          child: const SizedBox(
                             width: 40,
                             height: 40,
                             child: CircularProgressIndicator(
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 3,
                             ),
                           ),

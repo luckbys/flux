@@ -5,10 +5,9 @@ import '../../services/evolution/whatsapp_integration_service.dart';
 import '../../services/evolution/evolution_models.dart';
 import '../../styles/app_theme.dart';
 import '../../config/app_config.dart';
-import '../../utils/color_extensions.dart';
 
 class WhatsAppIntegrationWidget extends StatefulWidget {
-  const WhatsAppIntegrationWidget({Key? key}) : super(key: key);
+  const WhatsAppIntegrationWidget({super.key});
 
   @override
   State<WhatsAppIntegrationWidget> createState() =>
@@ -120,7 +119,7 @@ class _WhatsAppIntegrationWidgetState extends State<WhatsAppIntegrationWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -174,7 +173,7 @@ class _WhatsAppIntegrationWidgetState extends State<WhatsAppIntegrationWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -246,7 +245,7 @@ class _WhatsAppIntegrationWidgetState extends State<WhatsAppIntegrationWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

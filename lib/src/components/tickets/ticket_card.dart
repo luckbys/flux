@@ -4,7 +4,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../models/ticket.dart';
 import '../../styles/app_theme.dart';
 import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 import '../ui/user_avatar.dart';
 import '../ui/status_badge.dart';
 import '../ui/glass_container.dart';
@@ -36,14 +35,24 @@ class TicketCard extends StatelessWidget {
           horizontal: AppTheme.spacing16,
           vertical: AppTheme.spacing8,
         ),
-        decoration: AppTheme.cardDecoration,
+        decoration: AppTheme.cardDecoration.copyWith(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.spacing16),
+          padding: EdgeInsets.all(
+              isCompact ? AppTheme.spacing12 : AppTheme.spacing16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
-              const SizedBox(height: AppTheme.spacing12),
+              const SizedBox(height: AppTheme.spacing8),
               _buildTitle(context),
               if (!isCompact) ...[
                 const SizedBox(height: AppTheme.spacing8),
@@ -71,8 +80,8 @@ class TicketCard extends StatelessWidget {
             vertical: AppTheme.spacing4,
           ),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
           ),
           child: Text(
             '#${ticket.id.substring(0, 8)}',
@@ -101,8 +110,9 @@ class TicketCard extends StatelessWidget {
   Widget _buildTitle(BuildContext context) {
     return Text(
       ticket.title,
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
           ),
       maxLines: isCompact ? 1 : 2,
       overflow: TextOverflow.ellipsis,
@@ -113,7 +123,8 @@ class TicketCard extends StatelessWidget {
     return Text(
       ticket.description,
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textColor.withValues(alpha: 0.8),
+            color: AppTheme.getTextColor(context).withOpacity(0.7),
+            height: 1.5,
           ),
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
@@ -153,7 +164,7 @@ class TicketCard extends StatelessWidget {
                     ),
               ),
             ] else ...[
-              StatusBadge(
+              const StatusBadge(
                 text: 'Não Atribuído',
                 color: Colors.orange,
                 isOutlined: true,
@@ -236,26 +247,30 @@ class TicketCard extends StatelessWidget {
     return Row(
       children: [
         if (ticket.hasChat)
-          _buildActionButton(
-            icon: PhosphorIcons.chatCircle(),
-            label: 'Chat',
-            onTap: onChat,
-            color: AppTheme.primaryColor,
-          ),
+          if (onChat != null)
+            _buildActionButton(
+              icon: PhosphorIcons.chatCircleDots(PhosphorIconsStyle.fill),
+              label: 'Chat',
+              onTap: onChat,
+              color: AppTheme.primaryColor,
+              isFilled: true,
+            ),
         const SizedBox(width: AppTheme.spacing8),
-        _buildActionButton(
-          icon: PhosphorIcons.userPlus(),
-          label: 'Atribuir',
-          onTap: onAssign,
-          color: AppTheme.secondaryColor,
-        ),
+        if (onAssign != null)
+          _buildActionButton(
+            icon: PhosphorIcons.userPlus(PhosphorIconsStyle.regular),
+            label: 'Atribuir',
+            onTap: onAssign,
+            color: AppTheme.secondaryColor,
+          ),
         const Spacer(),
-        _buildActionButton(
-          icon: PhosphorIcons.pencilSimple(),
-          label: 'Editar',
-          onTap: onEdit,
-          color: AppTheme.textColor.withValues(alpha: 0.7),
-        ),
+        if (onEdit != null)
+          _buildActionButton(
+            icon: PhosphorIcons.pencilSimple(PhosphorIconsStyle.regular),
+            label: 'Editar',
+            onTap: onEdit,
+            color: AppTheme.getTextColor(context).withOpacity(0.7),
+          ),
       ],
     );
   }
@@ -265,6 +280,7 @@ class TicketCard extends StatelessWidget {
     required String label,
     required VoidCallback? onTap,
     required Color color,
+    bool isFilled = false,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -274,12 +290,14 @@ class TicketCard extends StatelessWidget {
           vertical: AppTheme.spacing8,
         ),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
+          color: isFilled ? color : color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+          border: isFilled
+              ? null
+              : Border.all(
+                  color: color.withOpacity(0.3),
+                  width: 1,
+                ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -341,10 +359,10 @@ class TicketCompactCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const TicketCompactCard({
-    Key? key,
+    super.key,
     required this.ticket,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

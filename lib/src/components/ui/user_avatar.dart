@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/user.dart';
 import '../../styles/app_theme.dart';
 import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 
 class UserAvatar extends StatelessWidget {
   final User user;

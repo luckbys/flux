@@ -7,7 +7,6 @@ import 'message_bubble.dart';
 import '../inputs/chat_input.dart';
 import '../../../styles/app_theme.dart';
 import '../../../styles/app_constants.dart';
-import '../../../utils/color_extensions.dart';
 
 class MessageList extends StatefulWidget {
   final Chat chat;
@@ -22,7 +21,7 @@ class MessageList extends StatefulWidget {
   final List<String> quickReplies;
 
   const MessageList({
-    Key? key,
+    super.key,
     required this.chat,
     required this.currentUser,
     required this.messages,
@@ -33,7 +32,7 @@ class MessageList extends StatefulWidget {
     this.onSendMessage,
     this.typingUsers = const [],
     this.quickReplies = const [],
-  }) : super(key: key);
+  });
 
   @override
   State<MessageList> createState() => _MessageListState();
@@ -160,7 +159,7 @@ class _MessageListState extends State<MessageList> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -190,7 +189,7 @@ class _MessageListState extends State<MessageList> {
                     Text(
                       _getParticipantsStatus(),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textColor.withValues(alpha:  0.7),
+                            color: AppTheme.textColor.withValues(alpha: 0.7),
                           ),
                     ),
                 ],
@@ -246,20 +245,20 @@ class _MessageListState extends State<MessageList> {
           Icon(
             Icons.chat_bubble_outline,
             size: 64,
-            color: AppTheme.textColor.withValues(alpha:  0.3),
+            color: AppTheme.textColor.withValues(alpha: 0.3),
           ),
           const SizedBox(height: AppTheme.spacing16),
           Text(
             'Nenhuma mensagem ainda',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppTheme.textColor.withValues(alpha:  0.7),
+                  color: AppTheme.textColor.withValues(alpha: 0.7),
                 ),
           ),
           const SizedBox(height: AppTheme.spacing8),
           Text(
             'Inicie a conversa enviando uma mensagem',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textColor.withValues(alpha:  0.5),
+                  color: AppTheme.textColor.withValues(alpha: 0.5),
                 ),
             textAlign: TextAlign.center,
           ),
@@ -306,7 +305,7 @@ class _MessageListState extends State<MessageList> {
         color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: AppTheme.textColor.withValues(alpha:  0.1),
+            color: AppTheme.textColor.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -355,7 +354,7 @@ class _MessageListState extends State<MessageList> {
             },
             icon: const Icon(Icons.close),
             iconSize: AppConstants.iconSmall,
-            color: AppTheme.textColor.withValues(alpha:  0.7),
+            color: AppTheme.textColor.withValues(alpha: 0.7),
           ),
         ],
       ),

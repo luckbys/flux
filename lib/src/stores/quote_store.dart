@@ -14,7 +14,7 @@ enum QuoteLoadingState {
 
 class QuoteStore extends ChangeNotifier {
   final QuoteService _quoteService = QuoteService();
-  
+
   // Estados
   QuoteLoadingState _loadingState = QuoteLoadingState.idle;
   String? _errorMessage;
@@ -36,7 +36,7 @@ class QuoteStore extends ChangeNotifier {
   QuotePriority? _filterPriority;
   String? _filterAssignedUser;
   String _searchQuery = '';
-  
+
   // Filtros avançados
   DateTimeRange? _filterDateRange;
   double? _filterMinValue;
@@ -79,14 +79,15 @@ class QuoteStore extends ChangeNotifier {
       );
       _setLoadingState(QuoteLoadingState.success);
 
-      AppConfig.log('${_quotes.length} orçamentos carregados', tag: 'QuoteStore');
+      AppConfig.log('${_quotes.length} orçamentos carregados',
+          tag: 'QuoteStore');
 
       // Carregar estatísticas
       await _loadQuoteStats();
     } catch (e) {
       AppConfig.log('Erro ao carregar orçamentos: $e', tag: 'QuoteStore');
       _setError('Erro ao carregar orçamentos: $e');
-      
+
       // Fallback para dados mock em caso de erro
       _quotes = _generateMockQuotes();
       _setLoadingState(QuoteLoadingState.success);
@@ -190,12 +191,12 @@ class QuoteStore extends ChangeNotifier {
       if (index != -1) {
         _quotes[index] = updatedQuote;
       }
-      
+
       _setLoadingState(QuoteLoadingState.success);
-      
+
       AppConfig.log('Orçamento atualizado: $quoteId', tag: 'QuoteStore');
       await _loadQuoteStats();
-      
+
       return true;
     } catch (e) {
       AppConfig.log('Erro ao atualizar orçamento: $e', tag: 'QuoteStore');
@@ -251,12 +252,14 @@ class QuoteStore extends ChangeNotifier {
   /// Enviar orçamento por email
   Future<bool> sendQuoteByEmail(String quoteId) async {
     try {
-      AppConfig.log('Enviando orçamento por email: $quoteId', tag: 'QuoteStore');
+      AppConfig.log('Enviando orçamento por email: $quoteId',
+          tag: 'QuoteStore');
       // Simulação de envio de email
       await Future.delayed(const Duration(milliseconds: 500));
       return true;
     } catch (e) {
-      AppConfig.log('Erro ao enviar orçamento por email: $e', tag: 'QuoteStore');
+      AppConfig.log('Erro ao enviar orçamento por email: $e',
+          tag: 'QuoteStore');
       return false;
     }
   }
@@ -287,10 +290,10 @@ class QuoteStore extends ChangeNotifier {
 
       _quotes.removeWhere((q) => q.id == quoteId);
       _setLoadingState(QuoteLoadingState.success);
-      
+
       AppConfig.log('Orçamento excluído: $quoteId', tag: 'QuoteStore');
       _loadQuoteStats();
-      
+
       return true;
     } catch (e) {
       AppConfig.log('Erro ao excluir orçamento: $e', tag: 'QuoteStore');
@@ -382,7 +385,7 @@ class QuoteStore extends ChangeNotifier {
     } else {
       _filterStatus = null;
     }
-    
+
     _filterDateRange = dateRange;
     _filterMinValue = minValue;
     _filterMaxValue = maxValue;
@@ -446,15 +449,19 @@ class QuoteStore extends ChangeNotifier {
 
     // Filtro por usuário atribuído
     if (_filterAssignedUser != null) {
-      filtered = filtered.where((q) => q.assignedAgent?.id == _filterAssignedUser).toList();
+      filtered = filtered
+          .where((q) => q.assignedAgent?.id == _filterAssignedUser)
+          .toList();
     }
 
     // Filtro por período de data
     if (_filterDateRange != null) {
       filtered = filtered.where((q) {
         final quoteDate = q.createdAt;
-        return quoteDate.isAfter(_filterDateRange!.start.subtract(const Duration(days: 1))) &&
-               quoteDate.isBefore(_filterDateRange!.end.add(const Duration(days: 1)));
+        return quoteDate.isAfter(
+                _filterDateRange!.start.subtract(const Duration(days: 1))) &&
+            quoteDate
+                .isBefore(_filterDateRange!.end.add(const Duration(days: 1)));
       }).toList();
     }
 
@@ -473,8 +480,8 @@ class QuoteStore extends ChangeNotifier {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((q) {
         return q.title.toLowerCase().contains(query) ||
-               q.customer.name.toLowerCase().contains(query) ||
-               (q.description?.toLowerCase().contains(query) ?? false);
+            q.customer.name.toLowerCase().contains(query) ||
+            (q.description?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
 
@@ -491,10 +498,13 @@ class QuoteStore extends ChangeNotifier {
         'total': _quotes.length,
         'draft': _quotes.where((q) => q.status == QuoteStatus.draft).length,
         'pending': _quotes.where((q) => q.status == QuoteStatus.pending).length,
-        'approved': _quotes.where((q) => q.status == QuoteStatus.approved).length,
-        'rejected': _quotes.where((q) => q.status == QuoteStatus.rejected).length,
+        'approved':
+            _quotes.where((q) => q.status == QuoteStatus.approved).length,
+        'rejected':
+            _quotes.where((q) => q.status == QuoteStatus.rejected).length,
         'expired': _quotes.where((q) => q.isExpired).length,
-        'converted': _quotes.where((q) => q.status == QuoteStatus.converted).length,
+        'converted':
+            _quotes.where((q) => q.status == QuoteStatus.converted).length,
       };
       notifyListeners();
     }
@@ -525,12 +535,13 @@ class QuoteStore extends ChangeNotifier {
       Quote(
         id: '1',
         title: 'Sistema de CRM Personalizado',
-        description: 'Desenvolvimento de sistema CRM com funcionalidades específicas',
+        description:
+            'Desenvolvimento de sistema CRM com funcionalidades específicas',
         status: QuoteStatus.pending,
         priority: QuotePriority.high,
         customer: mockCustomer,
         assignedAgent: mockAgent,
-        items: [
+        items: const [
           QuoteItem(
             id: '1',
             description: 'Desenvolvimento Frontend',
@@ -558,7 +569,7 @@ class QuoteStore extends ChangeNotifier {
         priority: QuotePriority.normal,
         customer: mockCustomer,
         assignedAgent: mockAgent,
-        items: [
+        items: const [
           QuoteItem(
             id: '3',
             description: 'Auditoria de Marketing',
@@ -587,7 +598,7 @@ class QuoteStore extends ChangeNotifier {
         priority: QuotePriority.normal,
         customer: mockCustomer,
         assignedAgent: mockAgent,
-        items: [
+        items: const [
           QuoteItem(
             id: '5',
             description: 'Design UI/UX',

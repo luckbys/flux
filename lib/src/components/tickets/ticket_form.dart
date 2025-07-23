@@ -6,7 +6,6 @@ import '../ui/status_badge.dart';
 import '../ui/user_avatar.dart';
 import '../../styles/app_theme.dart';
 import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 
 class TicketForm extends StatefulWidget {
   final Ticket? ticket;
@@ -15,12 +14,12 @@ class TicketForm extends StatefulWidget {
   final VoidCallback? onCancel;
 
   const TicketForm({
-    Key? key,
+    super.key,
     this.ticket,
     this.availableAgents = const [],
     this.onSubmit,
     this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
   State<TicketForm> createState() => _TicketFormState();
@@ -211,7 +210,7 @@ class _TicketFormState extends State<TicketForm> {
                   border: Border.all(
                     color: isSelected
                         ? AppTheme.primaryColor
-                        : AppTheme.textColor.withValues(alpha:  0.3),
+                        : AppTheme.textColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -294,7 +293,7 @@ class _TicketFormState extends State<TicketForm> {
                   border: Border.all(
                     color: isSelected
                         ? AppTheme.primaryColor
-                        : AppTheme.textColor.withValues(alpha:  0.3),
+                        : AppTheme.textColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -375,7 +374,7 @@ class _TicketFormState extends State<TicketForm> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
             border: Border.all(
-              color: AppTheme.textColor.withValues(alpha:  0.3),
+              color: AppTheme.textColor.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -394,7 +393,7 @@ class _TicketFormState extends State<TicketForm> {
                       decoration: BoxDecoration(
                         color:
                             Color(int.parse(tag.color, radix: 16) | 0xFF000000)
-                                .withValues(alpha:  0.1),
+                                .withValues(alpha: 0.1),
                         borderRadius:
                             BorderRadius.circular(AppConstants.radiusSmall),
                         border: Border.all(
@@ -446,17 +445,17 @@ class _TicketFormState extends State<TicketForm> {
                     vertical: AppTheme.spacing8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha:  0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     borderRadius:
                         BorderRadius.circular(AppConstants.radiusSmall),
                     border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha:  0.3),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add,
                         size: 16,

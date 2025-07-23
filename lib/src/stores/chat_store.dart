@@ -12,7 +12,7 @@ class ChatStore extends ChangeNotifier {
   // Estado dos chats
   List<Chat> _chats = [];
   Chat? _selectedChat;
-  Map<String, List<Message>> _chatMessages = {};
+  final Map<String, List<Message>> _chatMessages = {};
 
   // Estados de carregamento
   bool _isLoadingChats = false;

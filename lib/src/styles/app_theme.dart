@@ -172,8 +172,8 @@ class AppTheme {
         color: const Color(0x333B82F6), // Borda azul semi-transparente
         width: 1.5,
       ),
-      boxShadow: [
-        const BoxShadow(
+      boxShadow: const [
+        BoxShadow(
           color: Color(0x403B82F6), // Sombra azul
           blurRadius: 20,
           offset: Offset(0, 4),
@@ -187,8 +187,8 @@ class AppTheme {
     return BoxDecoration(
       color: darkCardColor.withValues(alpha: 0.7),
       borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        const BoxShadow(
+      boxShadow: const [
+        BoxShadow(
           color: Color(0x403B82F6), // Brilho azul
           blurRadius: 15,
           spreadRadius: 1,
@@ -354,14 +354,14 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: lightBorderColor,
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: lightBorderColor,
             width: 1,
           ),
@@ -442,31 +442,31 @@ class AppTheme {
         brightness: Brightness.dark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: darkBorderColor),
+          side: const BorderSide(color: darkBorderColor),
         ),
       ),
       // Configurações para switches no tema escuro
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.disabled)) {
+        thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.disabled)) {
             return const Color(0xFF9E9E9E); // darkHintColor
           }
-          if (states.contains(MaterialState.selected)) {
+          if (states.contains(WidgetState.selected)) {
             return primaryColor;
           }
           return darkTextColor;
         }),
-        trackColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.disabled)) {
+        trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.disabled)) {
             return const Color(0xFF9E9E9E).withOpacity(0.3); // darkHintColor
           }
-          if (states.contains(MaterialState.selected)) {
+          if (states.contains(WidgetState.selected)) {
             return primaryColor.withOpacity(0.5);
           }
           return darkSurfaceColor;
         }),
-        trackOutlineColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.disabled)) {
+        trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.disabled)) {
             return Colors.transparent;
           }
           return Colors.transparent;

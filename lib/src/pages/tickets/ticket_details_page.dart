@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../models/ticket.dart';
-import '../../models/user.dart';
 import '../../models/message.dart';
 import '../../components/ui/user_avatar.dart';
 import '../../components/ui/status_badge.dart';
@@ -11,8 +10,6 @@ import '../../services/ai/gemini_service.dart';
 import '../../stores/ticket_store.dart';
 import '../../stores/auth_store.dart';
 import '../../styles/app_theme.dart';
-import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 
 class TicketDetailsPage extends StatefulWidget {
   final Ticket ticket;
@@ -204,7 +201,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
-      shadowColor: Colors.black.withValues(alpha:  0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: Icon(
@@ -283,7 +280,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -402,7 +399,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -515,7 +512,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -646,11 +643,11 @@ class _TicketDetailsPageState extends State<TicketDetailsPage> {
   Widget _buildMessageInputSection() {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacing16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: const Color(0xFFE5E7EB),
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),

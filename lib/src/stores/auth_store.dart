@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase/supabase_service.dart';
 import '../models/user.dart' as app_user;
 import '../config/app_config.dart';
+import '../pages/auth/login_page.dart';
 
 enum AuthState {
   initial,
@@ -205,16 +206,20 @@ class AuthStore extends ChangeNotifier {
   Future<bool> signIn({
     required String email,
     required String password,
+    bool rememberMe = false,
   }) async {
     try {
       _setLoading(true);
       _clearError();
 
-      AppConfig.log('Tentando fazer login: $email', tag: 'AuthStore');
+      AppConfig.log(
+          'Tentando fazer login: $email (Lembrar de mim: $rememberMe)',
+          tag: 'AuthStore');
 
       final response = await _supabaseService.signIn(
         email: email,
         password: password,
+        rememberMe: rememberMe,
       );
 
       if (response?.user != null) {
@@ -227,7 +232,11 @@ class AuthStore extends ChangeNotifier {
         await _loadAppUser();
 
         // Atualizar o estado para autenticado
+        AppConfig.log('🔄 AuthStore - Atualizando estado para authenticated',
+            tag: 'AuthStore');
         _setState(AuthState.authenticated);
+        AppConfig.log('✅ AuthStore - Estado atualizado para authenticated',
+            tag: 'AuthStore');
 
         return true;
       } else {
@@ -297,6 +306,12 @@ class AuthStore extends ChangeNotifier {
     try {
       _setLoading(true);
       await _supabaseService.signOut();
+
+      // Limpar dados do usuário
+      _supabaseUser = null;
+      _appUser = null;
+      _setState(AuthState.unauthenticated);
+
       AppConfig.log('Logout realizado com sucesso', tag: 'AuthStore');
     } catch (e) {
       AppConfig.log('Erro no logout: $e', tag: 'AuthStore');
@@ -378,8 +393,14 @@ class AuthStore extends ChangeNotifier {
 
   /// Helper methods
   void _setState(AuthState newState) {
+    AppConfig.log('🔄 AuthStore - Mudando estado de $_state para $newState',
+        tag: 'AuthStore');
     _state = newState;
+    AppConfig.log('📢 AuthStore - Chamando notifyListeners()',
+        tag: 'AuthStore');
     notifyListeners();
+    AppConfig.log('✅ AuthStore - notifyListeners() executado',
+        tag: 'AuthStore');
   }
 
   void _setLoading(bool loading) {

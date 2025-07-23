@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../models/chat.dart';
 import '../../models/user.dart';
 import '../../components/ui/user_avatar.dart';
 import '../../styles/app_theme.dart';
-import '../../utils/color_extensions.dart';
 import '../../stores/chat_store.dart';
-import '../../stores/theme_store.dart';
 import './chat_page.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -18,7 +15,8 @@ class ChatListPage extends StatefulWidget {
   State<ChatListPage> createState() => _ChatListPageState();
 }
 
-class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMixin {
+class _ChatListPageState extends State<ChatListPage>
+    with TickerProviderStateMixin {
   String _searchQuery = '';
   String _selectedFilter = 'all';
   int _selectedSidebarIndex = 0;
@@ -41,12 +39,12 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
-    
+
     // Carregar chats do store
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatStore>().loadChats();
     });
-    
+
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -69,7 +67,10 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
   void _updateSearchSuggestions() {
     final chats = context.read<ChatStore>().chats;
     _searchSuggestions = chats
-        .where((chat) => chat.getDisplayTitle().toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((chat) => chat
+            .getDisplayTitle()
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()))
         .map((chat) => chat.getDisplayTitle())
         .take(5)
         .toList();
@@ -79,11 +80,12 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1024;
-    
+
     return Theme(
       data: _isDarkMode ? _buildDarkTheme() : _buildLightTheme(),
       child: Scaffold(
-        backgroundColor: _isDarkMode ? const Color(0xFF1F2937) : const Color(0xFFF8FAFC),
+        backgroundColor:
+            _isDarkMode ? const Color(0xFF1F2937) : const Color(0xFFF8FAFC),
         body: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
@@ -130,28 +132,38 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
 
   List<Chat> _getFilteredChats(List<Chat> chats) {
     var filtered = chats;
-    
+
     // Aplicar filtro de status
     switch (_selectedFilter) {
       case 'active':
-        filtered = filtered.where((chat) => chat.status == ChatStatus.active).toList();
+        filtered =
+            filtered.where((chat) => chat.status == ChatStatus.active).toList();
         break;
       case 'archived':
-        filtered = filtered.where((chat) => chat.status == ChatStatus.archived).toList();
+        filtered = filtered
+            .where((chat) => chat.status == ChatStatus.archived)
+            .toList();
         break;
       case 'closed':
-        filtered = filtered.where((chat) => chat.status == ChatStatus.closed).toList();
+        filtered =
+            filtered.where((chat) => chat.status == ChatStatus.closed).toList();
         break;
     }
-    
+
     // Aplicar busca
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((chat) => 
-        chat.getDisplayTitle().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        (chat.lastMessage?.content ?? '').toLowerCase().contains(_searchQuery.toLowerCase())
-      ).toList();
+      filtered = filtered
+          .where((chat) =>
+              chat
+                  .getDisplayTitle()
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ||
+              (chat.lastMessage?.content ?? '')
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()))
+          .toList();
     }
-    
+
     return filtered;
   }
 
@@ -198,10 +210,22 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
 
   Widget _buildSidebar() {
     final sidebarItems = [
-      {'icon': PhosphorIcons.chatCircle(), 'label': 'Conversas Ativas', 'filter': 'active'},
-      {'icon': PhosphorIcons.archive(), 'label': 'Arquivadas', 'filter': 'archived'},
+      {
+        'icon': PhosphorIcons.chatCircle(),
+        'label': 'Conversas Ativas',
+        'filter': 'active'
+      },
+      {
+        'icon': PhosphorIcons.archive(),
+        'label': 'Arquivadas',
+        'filter': 'archived'
+      },
       {'icon': PhosphorIcons.x(), 'label': 'Fechadas', 'filter': 'closed'},
-      {'icon': PhosphorIcons.gear(), 'label': 'Configurações', 'filter': 'settings'},
+      {
+        'icon': PhosphorIcons.gear(),
+        'label': 'Configurações',
+        'filter': 'settings'
+      },
     ];
 
     return Container(
@@ -245,7 +269,8 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                      color:
+                          _isDarkMode ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
                 ),
@@ -272,31 +297,39 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
               itemBuilder: (context, index) {
                 final item = sidebarItems[index];
                 final isSelected = _selectedSidebarIndex == index;
-                
+
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? (_isDarkMode ? const Color(0xFF4F46E5) : const Color(0xFF3B82F6))
+                    color: isSelected
+                        ? (_isDarkMode
+                            ? const Color(0xFF4F46E5)
+                            : const Color(0xFF3B82F6))
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ListTile(
                     leading: Icon(
                       item['icon'] as IconData,
-                      color: isSelected 
+                      color: isSelected
                           ? Colors.white
-                          : (_isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280)),
+                          : (_isDarkMode
+                              ? const Color(0xFFD1D5DB)
+                              : const Color(0xFF6B7280)),
                       size: 20,
                     ),
                     title: Text(
                       item['label'] as String,
                       style: TextStyle(
-                        color: isSelected 
+                        color: isSelected
                             ? Colors.white
-                            : (_isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151)),
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            : (_isDarkMode
+                                ? const Color(0xFFD1D5DB)
+                                : const Color(0xFF374151)),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
                         fontSize: 14,
                       ),
                     ),
@@ -347,14 +380,17 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
-                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                      color:
+                          _isDarkMode ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${_getActiveChatsCount(filteredChats)} ativas • ${filteredChats.length} total',
                     style: TextStyle(
-                      color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                      color: _isDarkMode
+                          ? const Color(0xFFD1D5DB)
+                          : const Color(0xFF6B7280),
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),
@@ -367,7 +403,9 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                   const SizedBox(width: 16),
                   Container(
                     decoration: BoxDecoration(
-                      color: _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFF3F4F6),
+                      color: _isDarkMode
+                          ? const Color(0xFF4B5563)
+                          : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
@@ -376,7 +414,9 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                       },
                       icon: Icon(
                         PhosphorIcons.arrowClockwise(),
-                        color: _isDarkMode ? Colors.white : const Color(0xFF374151),
+                        color: _isDarkMode
+                            ? Colors.white
+                            : const Color(0xFF374151),
                         size: 20,
                       ),
                     ),
@@ -408,9 +448,11 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
             label: Text(
               filter['label']!,
               style: TextStyle(
-                color: isSelected 
-                    ? Colors.white 
-                    : (_isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151)),
+                color: isSelected
+                    ? Colors.white
+                    : (_isDarkMode
+                        ? const Color(0xFFD1D5DB)
+                        : const Color(0xFF374151)),
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
               ),
@@ -421,7 +463,8 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                 _selectedFilter = filter['key']!;
               });
             },
-            backgroundColor: _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFF3F4F6),
+            backgroundColor:
+                _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFF3F4F6),
             selectedColor: const Color(0xFF3B82F6),
             checkmarkColor: Colors.white,
             side: BorderSide.none,
@@ -436,10 +479,13 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
       children: [
         Container(
           decoration: BoxDecoration(
-            color: _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFF8FAFC),
+            color:
+                _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFFE5E7EB),
+              color: _isDarkMode
+                  ? const Color(0xFF6B7280)
+                  : const Color(0xFFE5E7EB),
               width: 1,
             ),
           ),
@@ -449,11 +495,15 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
             decoration: InputDecoration(
               hintText: 'Buscar conversas, mensagens...',
               hintStyle: TextStyle(
-                color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF9CA3AF),
+                color: _isDarkMode
+                    ? const Color(0xFF9CA3AF)
+                    : const Color(0xFF9CA3AF),
               ),
               prefixIcon: Icon(
                 PhosphorIcons.magnifyingGlass(),
-                color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                color: _isDarkMode
+                    ? const Color(0xFFD1D5DB)
+                    : const Color(0xFF6B7280),
                 size: 20,
               ),
               suffixIcon: _searchQuery.isNotEmpty
@@ -464,7 +514,9 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                       },
                       icon: Icon(
                         PhosphorIcons.x(),
-                        color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                        color: _isDarkMode
+                            ? const Color(0xFFD1D5DB)
+                            : const Color(0xFF6B7280),
                         size: 16,
                       ),
                     )
@@ -490,7 +542,9 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                   color: _isDarkMode ? const Color(0xFF374151) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFFE5E7EB),
+                    color: _isDarkMode
+                        ? const Color(0xFF6B7280)
+                        : const Color(0xFFE5E7EB),
                   ),
                 ),
                 child: ListView.builder(
@@ -503,12 +557,16 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
                       leading: Icon(
                         PhosphorIcons.clockCounterClockwise(),
                         size: 16,
-                        color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                        color: _isDarkMode
+                            ? const Color(0xFF9CA3AF)
+                            : const Color(0xFF6B7280),
                       ),
                       title: Text(
                         suggestion,
                         style: TextStyle(
-                          color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                          color: _isDarkMode
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                           fontSize: 14,
                         ),
                       ),
@@ -537,7 +595,7 @@ class _ChatListPageState extends State<ChatListPage> with TickerProviderStateMix
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -823,7 +881,8 @@ class _ChatListItem extends StatefulWidget {
   State<_ChatListItem> createState() => _ChatListItemState();
 }
 
-class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderStateMixin {
+class _ChatListItemState extends State<_ChatListItem>
+    with SingleTickerProviderStateMixin {
   bool _isHovered = false;
   late AnimationController _hoverController;
   late Animation<double> _scaleAnimation;
@@ -872,11 +931,13 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
             scale: _scaleAnimation.value,
             child: Container(
               decoration: BoxDecoration(
-                color: widget.isDarkMode ? const Color(0xFF374151) : Colors.white,
+                color:
+                    widget.isDarkMode ? const Color(0xFF374151) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: widget.isDarkMode ? 0.2 : 0.08),
+                    color: Colors.black
+                        .withValues(alpha: widget.isDarkMode ? 0.2 : 0.08),
                     blurRadius: _elevationAnimation.value,
                     offset: Offset(0, _elevationAnimation.value / 3),
                   ),
@@ -905,7 +966,9 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: widget.getStatusColor(widget.chat.status).withValues(alpha: 0.3),
+                                    color: widget
+                                        .getStatusColor(widget.chat.status)
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -928,7 +991,9 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF22C55E),
                                     border: Border.all(
-                                      color: widget.isDarkMode ? const Color(0xFF374151) : Colors.white,
+                                      color: widget.isDarkMode
+                                          ? const Color(0xFF374151)
+                                          : Colors.white,
                                       width: 2,
                                     ),
                                     borderRadius: BorderRadius.circular(7),
@@ -946,7 +1011,9 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                     color: const Color(0xFFEF4444),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: widget.isDarkMode ? const Color(0xFF374151) : Colors.white,
+                                      color: widget.isDarkMode
+                                          ? const Color(0xFF374151)
+                                          : Colors.white,
                                       width: 2,
                                     ),
                                   ),
@@ -955,7 +1022,9 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                     minHeight: 20,
                                   ),
                                   child: Text(
-                                    widget.unreadCount > 99 ? '99+' : widget.unreadCount.toString(),
+                                    widget.unreadCount > 99
+                                        ? '99+'
+                                        : widget.unreadCount.toString(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -980,8 +1049,12 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                     child: Text(
                                       widget.chat.getDisplayTitle(),
                                       style: TextStyle(
-                                        fontWeight: widget.hasUnread ? FontWeight.w700 : FontWeight.w600,
-                                        color: widget.isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                        fontWeight: widget.hasUnread
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                        color: widget.isDarkMode
+                                            ? Colors.white
+                                            : const Color(0xFF1F2937),
                                         fontSize: 16,
                                       ),
                                       maxLines: 1,
@@ -990,13 +1063,18 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    widget.formatTime(widget.chat.updatedAt ?? widget.chat.createdAt),
+                                    widget.formatTime(widget.chat.updatedAt ??
+                                        widget.chat.createdAt),
                                     style: TextStyle(
                                       color: widget.hasUnread
                                           ? const Color(0xFF3B82F6)
-                                          : (widget.isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                                          : (widget.isDarkMode
+                                              ? const Color(0xFF9CA3AF)
+                                              : const Color(0xFF6B7280)),
                                       fontSize: 12,
-                                      fontWeight: widget.hasUnread ? FontWeight.w600 : FontWeight.w500,
+                                      fontWeight: widget.hasUnread
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -1011,7 +1089,8 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: widget.getStatusColor(widget.chat.status),
+                                      color: widget
+                                          .getStatusColor(widget.chat.status),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -1026,13 +1105,20 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      widget.chat.lastMessage?.content ?? 'Nenhuma mensagem ainda',
+                                      widget.chat.lastMessage?.content ??
+                                          'Nenhuma mensagem ainda',
                                       style: TextStyle(
                                         color: widget.hasUnread
-                                            ? (widget.isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151))
-                                            : (widget.isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                                            ? (widget.isDarkMode
+                                                ? const Color(0xFFD1D5DB)
+                                                : const Color(0xFF374151))
+                                            : (widget.isDarkMode
+                                                ? const Color(0xFF9CA3AF)
+                                                : const Color(0xFF6B7280)),
                                         fontSize: 14,
-                                        fontWeight: widget.hasUnread ? FontWeight.w500 : FontWeight.normal,
+                                        fontWeight: widget.hasUnread
+                                            ? FontWeight.w500
+                                            : FontWeight.normal,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -1049,7 +1135,9 @@ class _ChatListItemState extends State<_ChatListItem> with SingleTickerProviderS
                           duration: const Duration(milliseconds: 200),
                           child: Icon(
                             PhosphorIcons.caretRight(),
-                            color: widget.isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                            color: widget.isDarkMode
+                                ? const Color(0xFF9CA3AF)
+                                : const Color(0xFF6B7280),
                             size: 16,
                           ),
                         ),

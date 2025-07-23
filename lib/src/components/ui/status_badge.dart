@@ -3,7 +3,6 @@ import '../../models/ticket.dart';
 import '../../models/user.dart';
 import '../../styles/app_theme.dart';
 import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 
 class StatusBadge extends StatelessWidget {
   final String text;

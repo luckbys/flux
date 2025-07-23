@@ -7,7 +7,6 @@ import '../../ui/user_avatar.dart';
 import '../../ui/status_badge.dart';
 import '../../../styles/app_theme.dart';
 import '../../../styles/app_constants.dart';
-import '../../../utils/color_extensions.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;

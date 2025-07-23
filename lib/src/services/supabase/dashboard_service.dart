@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../../models/ticket.dart';
 import '../../models/user.dart';
 import '../../config/app_config.dart';
@@ -11,7 +10,8 @@ class DashboardService {
   /// Buscar estatísticas gerais do dashboard
   Future<Map<String, dynamic>> getDashboardStats() async {
     try {
-      AppConfig.log('Buscando estatísticas do dashboard...', tag: 'DashboardService');
+      AppConfig.log('Buscando estatísticas do dashboard...',
+          tag: 'DashboardService');
 
       // Buscar estatísticas em paralelo
       final results = await Future.wait([
@@ -29,7 +29,8 @@ class DashboardService {
         'lastUpdated': DateTime.now(),
       };
 
-      AppConfig.log('Estatísticas carregadas com sucesso', tag: 'DashboardService');
+      AppConfig.log('Estatísticas carregadas com sucesso',
+          tag: 'DashboardService');
       return stats;
     } catch (e) {
       AppConfig.log('Erro ao buscar estatísticas: $e', tag: 'DashboardService');
@@ -52,8 +53,10 @@ class DashboardService {
       return {
         'total': tickets.length,
         'open': tickets.where((t) => t['ticket_status'] == 'open').length,
-        'inProgress': tickets.where((t) => t['ticket_status'] == 'in_progress').length,
-        'resolved': tickets.where((t) => t['ticket_status'] == 'resolved').length,
+        'inProgress':
+            tickets.where((t) => t['ticket_status'] == 'in_progress').length,
+        'resolved':
+            tickets.where((t) => t['ticket_status'] == 'resolved').length,
         'closed': tickets.where((t) => t['ticket_status'] == 'closed').length,
         'resolvedToday': tickets.where((t) {
           final createdAt = DateTime.parse(t['created_at']);
@@ -63,12 +66,13 @@ class DashboardService {
           final createdAt = DateTime.parse(t['created_at']);
           return createdAt.isAfter(thisWeek);
         }).length,
-        'highPriority': tickets.where((t) => 
-          t['priority'] == 'high' || t['priority'] == 'urgent'
-        ).length,
+        'highPriority': tickets
+            .where((t) => t['priority'] == 'high' || t['priority'] == 'urgent')
+            .length,
       };
     } catch (e) {
-      AppConfig.log('Erro ao buscar estatísticas de tickets: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar estatísticas de tickets: $e',
+          tag: 'DashboardService');
       return {
         'total': 0,
         'open': 0,
@@ -112,7 +116,8 @@ class DashboardService {
         }).length,
       };
     } catch (e) {
-      AppConfig.log('Erro ao buscar estatísticas de orçamentos: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar estatísticas de orçamentos: $e',
+          tag: 'DashboardService');
       return {
         'total': 0,
         'draft': 0,
@@ -158,7 +163,8 @@ class DashboardService {
         }).length,
       };
     } catch (e) {
-      AppConfig.log('Erro ao buscar estatísticas de usuários: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar estatísticas de usuários: $e',
+          tag: 'DashboardService');
       return {
         'total': 0,
         'customers': 0,
@@ -180,17 +186,14 @@ class DashboardService {
       final activities = <Map<String, dynamic>>[];
 
       // Buscar tickets recentes
-      final recentTickets = await _supabaseService.client
-          .from('tickets')
-          .select('''
+      final recentTickets =
+          await _supabaseService.client.from('tickets').select('''
             id,
             title,
             ticket_status,
             created_at,
             customer:users!customer_id(name)
-          ''')
-          .order('created_at', ascending: false)
-          .limit(5);
+          ''').order('created_at', ascending: false).limit(5);
 
       for (final ticket in recentTickets) {
         activities.add({
@@ -204,17 +207,14 @@ class DashboardService {
       }
 
       // Buscar orçamentos recentes
-      final recentQuotes = await _supabaseService.client
-          .from('quotes')
-          .select('''
+      final recentQuotes =
+          await _supabaseService.client.from('quotes').select('''
             id,
             title,
             status,
             created_at,
             customer:users!customer_id(name)
-          ''')
-          .order('created_at', ascending: false)
-          .limit(5);
+          ''').order('created_at', ascending: false).limit(5);
 
       for (final quote in recentQuotes) {
         activities.add({
@@ -228,16 +228,13 @@ class DashboardService {
       }
 
       // Buscar mensagens recentes
-      final recentMessages = await _supabaseService.client
-          .from('messages')
-          .select('''
+      final recentMessages =
+          await _supabaseService.client.from('messages').select('''
             id,
             content,
             created_at,
             sender:users!sender_id(name)
-          ''')
-          .order('created_at', ascending: false)
-          .limit(3);
+          ''').order('created_at', ascending: false).limit(3);
 
       for (final message in recentMessages) {
         activities.add({
@@ -251,14 +248,14 @@ class DashboardService {
       }
 
       // Ordenar por timestamp (mais recente primeiro)
-      activities.sort((a, b) => 
-        (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime)
-      );
+      activities.sort((a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
 
       // Retornar apenas os 10 mais recentes
       return activities.take(10).toList();
     } catch (e) {
-      AppConfig.log('Erro ao buscar atividades recentes: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar atividades recentes: $e',
+          tag: 'DashboardService');
       return [];
     }
   }
@@ -268,9 +265,7 @@ class DashboardService {
     try {
       AppConfig.log('Buscando tickets recentes...', tag: 'DashboardService');
 
-      final response = await _supabaseService.client
-          .from('tickets')
-          .select('''
+      final response = await _supabaseService.client.from('tickets').select('''
             *,
             customer:users!customer_id(
               id,
@@ -292,16 +287,17 @@ class DashboardService {
               status,
               created_at
             )
-          ''')
-          .order('created_at', ascending: false)
-          .limit(limit);
+          ''').order('created_at', ascending: false).limit(limit);
 
-      final tickets = (response as List).map((json) => _mapTicketFromDb(json)).toList();
-      
-      AppConfig.log('${tickets.length} tickets recentes carregados', tag: 'DashboardService');
+      final tickets =
+          (response as List).map((json) => _mapTicketFromDb(json)).toList();
+
+      AppConfig.log('${tickets.length} tickets recentes carregados',
+          tag: 'DashboardService');
       return tickets;
     } catch (e) {
-      AppConfig.log('Erro ao buscar tickets recentes: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar tickets recentes: $e',
+          tag: 'DashboardService');
       return [];
     }
   }
@@ -318,12 +314,15 @@ class DashboardService {
           .order('last_seen', ascending: false)
           .limit(limit);
 
-      final users = (response as List).map((json) => _mapUserFromDb(json)).toList();
-      
-      AppConfig.log('${users.length} usuários online encontrados', tag: 'DashboardService');
+      final users =
+          (response as List).map((json) => _mapUserFromDb(json)).toList();
+
+      AppConfig.log('${users.length} usuários online encontrados',
+          tag: 'DashboardService');
       return users;
     } catch (e) {
-      AppConfig.log('Erro ao buscar usuários online: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar usuários online: $e',
+          tag: 'DashboardService');
       return [];
     }
   }
@@ -331,11 +330,12 @@ class DashboardService {
   /// Buscar métricas de performance
   Future<Map<String, dynamic>> getPerformanceMetrics() async {
     try {
-      AppConfig.log('Buscando métricas de performance...', tag: 'DashboardService');
+      AppConfig.log('Buscando métricas de performance...',
+          tag: 'DashboardService');
 
       final now = DateTime.now();
       final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-      
+
       // Buscar tickets dos últimos 30 dias
       final ticketsResponse = await _supabaseService.client
           .from('tickets')
@@ -343,12 +343,13 @@ class DashboardService {
           .gte('created_at', thirtyDaysAgo.toIso8601String());
 
       final tickets = ticketsResponse as List;
-      
+
       // Calcular tempo médio de resolução
-      final resolvedTickets = tickets.where((t) => 
-        t['resolved_at'] != null && t['ticket_status'] == 'resolved'
-      ).toList();
-      
+      final resolvedTickets = tickets
+          .where((t) =>
+              t['resolved_at'] != null && t['ticket_status'] == 'resolved')
+          .toList();
+
       double avgResolutionTime = 0;
       if (resolvedTickets.isNotEmpty) {
         final totalTime = resolvedTickets.fold<int>(0, (sum, ticket) {
@@ -360,12 +361,13 @@ class DashboardService {
       }
 
       // Taxa de resolução
-      final resolutionRate = tickets.isNotEmpty 
-          ? (resolvedTickets.length / tickets.length) * 100 
+      final resolutionRate = tickets.isNotEmpty
+          ? (resolvedTickets.length / tickets.length) * 100
           : 0.0;
 
       // Satisfação simulada (em um sistema real, viria de uma tabela de feedback)
-      final satisfactionRate = 85.0 + (DateTime.now().millisecond % 15); // 85-100%
+      final satisfactionRate =
+          85.0 + (DateTime.now().millisecond % 15); // 85-100%
 
       return {
         'avgResolutionTime': avgResolutionTime,
@@ -375,7 +377,8 @@ class DashboardService {
         'resolvedTicketsLast30Days': resolvedTickets.length,
       };
     } catch (e) {
-      AppConfig.log('Erro ao buscar métricas de performance: $e', tag: 'DashboardService');
+      AppConfig.log('Erro ao buscar métricas de performance: $e',
+          tag: 'DashboardService');
       return {
         'avgResolutionTime': 0.0,
         'resolutionRate': 0.0,
@@ -407,8 +410,11 @@ class DashboardService {
         (category) => category.name == json['category'],
         orElse: () => TicketCategory.general,
       ),
-      customer: customerData != null ? _mapUserFromDb(customerData) : _getDefaultUser(),
-      assignedAgent: assignedUserData != null ? _mapUserFromDb(assignedUserData) : null,
+      customer: customerData != null
+          ? _mapUserFromDb(customerData)
+          : _getDefaultUser(),
+      assignedAgent:
+          assignedUserData != null ? _mapUserFromDb(assignedUserData) : null,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),

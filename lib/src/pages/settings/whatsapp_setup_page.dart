@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/evolution/evolution_api_service.dart';
 import '../../services/evolution/whatsapp_integration_service.dart';
 import '../../styles/app_theme.dart';
-import '../../utils/color_extensions.dart';
 
 class WhatsAppSetupPage extends StatefulWidget {
   const WhatsAppSetupPage({super.key});
@@ -237,8 +236,8 @@ class _WhatsAppSetupPageState extends State<WhatsAppSetupPage> {
       padding: const EdgeInsets.all(AppTheme.spacing16),
       decoration: BoxDecoration(
         color: _isConnected
-            ? AppTheme.successColor.withValues(alpha:  0.1)
-            : AppTheme.errorColor.withValues(alpha:  0.1),
+            ? AppTheme.successColor.withValues(alpha: 0.1)
+            : AppTheme.errorColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _isConnected ? AppTheme.successColor : AppTheme.errorColor,
@@ -341,10 +340,10 @@ class _WhatsAppSetupPageState extends State<WhatsAppSetupPage> {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacing16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha:  0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha:  0.2),
+          color: AppTheme.primaryColor.withValues(alpha: 0.2),
         ),
       ),
       child: const Column(
@@ -428,10 +427,10 @@ class _WhatsAppSetupPageState extends State<WhatsAppSetupPage> {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacing16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha:  0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha:  0.2),
+          color: AppTheme.primaryColor.withValues(alpha: 0.2),
         ),
       ),
       child: const Column(
@@ -474,10 +473,10 @@ class _WhatsAppSetupPageState extends State<WhatsAppSetupPage> {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spacing16),
       decoration: BoxDecoration(
-        color: AppTheme.successColor.withValues(alpha:  0.1),
+        color: AppTheme.successColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.successColor.withValues(alpha:  0.2),
+          color: AppTheme.successColor.withValues(alpha: 0.2),
         ),
       ),
       child: Column(

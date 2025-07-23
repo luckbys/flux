@@ -129,6 +129,7 @@ class SupabaseService {
   Future<AuthResponse?> signIn({
     required String email,
     required String password,
+    bool rememberMe = false,
   }) async {
     try {
       // Verificar se está inicializado
@@ -137,7 +138,8 @@ class SupabaseService {
             'Supabase não está configurado corretamente. Verifique as credenciais em app_config.dart');
       }
 
-      AppConfig.log('Fazendo login: $email', tag: 'SupabaseService');
+      AppConfig.log('Fazendo login: $email (Lembrar de mim: $rememberMe)',
+          tag: 'SupabaseService');
 
       final response = await client.auth.signInWithPassword(
         email: email,
@@ -146,6 +148,14 @@ class SupabaseService {
 
       if (response.user != null) {
         AppConfig.log('Login realizado com sucesso!', tag: 'SupabaseService');
+
+        // Se "Lembrar de mim" estiver ativado, configurar a sessão para persistir
+        if (rememberMe && response.session != null) {
+          // O Supabase Flutter já gerencia automaticamente a persistência da sessão
+          // baseado na configuração do cliente. Por padrão, as sessões são persistentes.
+          AppConfig.log('Sessão configurada para persistir',
+              tag: 'SupabaseService');
+        }
       }
 
       return response;

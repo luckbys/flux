@@ -44,7 +44,7 @@ class EvolutionApiService {
             message: 'Instance info retrieved successfully',
           );
         } else {
-          return EvolutionApiResponse<EvolutionInstance>(
+          return const EvolutionApiResponse<EvolutionInstance>(
             success: false,
             message: 'Instance not found',
           );

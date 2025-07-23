@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../styles/app_theme.dart';
 import '../../../styles/app_constants.dart';
-import '../../../utils/color_extensions.dart';
 
 class ChatInput extends StatefulWidget {
   final TextEditingController? controller;
@@ -120,7 +119,8 @@ class _ChatInputState extends State<ChatInput> {
                   decoration: InputDecoration(
                     hintText: widget.placeholder,
                     hintStyle: TextStyle(
-                      color: AppTheme.getTextColor(context).withValues(alpha: 0.5),
+                      color:
+                          AppTheme.getTextColor(context).withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -236,7 +236,8 @@ class QuickReplyChips extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.getTextColor(context).withValues(alpha: 0.05),
+                    color:
+                        AppTheme.getTextColor(context).withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

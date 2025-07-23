@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../../models/message.dart';
 import '../../models/user.dart';
-import '../../models/chat.dart';
 import '../../models/ticket.dart';
 
 enum WebSocketConnectionState {
@@ -188,7 +186,9 @@ class WebSocketService {
     // Cancel timers
     _heartbeatTimer?.cancel();
     _reconnectTimer?.cancel();
-    _typingTimers.values.forEach((timer) => timer.cancel());
+    for (var timer in _typingTimers.values) {
+      timer.cancel();
+    }
     _typingTimers.clear();
 
     // Clear connected users
@@ -447,7 +447,7 @@ class WebSocketService {
     _reconnectTimer = Timer(delay, () {
       if (kDebugMode) {
         print(
-            'Attempting to reconnect... (${_reconnectAttempts}/${_maxReconnectAttempts})');
+            'Attempting to reconnect... ($_reconnectAttempts/$_maxReconnectAttempts)');
       }
       // TODO: Implement actual reconnection logic
     });
@@ -587,7 +587,9 @@ class WebSocketService {
     _userController.close();
     _heartbeatTimer?.cancel();
     _reconnectTimer?.cancel();
-    _typingTimers.values.forEach((timer) => timer.cancel());
+    for (var timer in _typingTimers.values) {
+      timer.cancel();
+    }
   }
 }
 

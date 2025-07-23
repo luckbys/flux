@@ -7,36 +7,32 @@ import 'design_tokens.dart';
 /// acessibilidade WCAG 2.1 AA e animações micro-interativas
 class EnhancedTheme {
   // ==================== TEMAS PRINCIPAIS ====================
-  
+
   /// Tema claro aprimorado
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       fontFamily: GoogleFonts.inter().fontFamily,
       brightness: Brightness.light,
-      
+
       // Color Scheme baseado nos tokens
       colorScheme: const ColorScheme.light(
         primary: DesignTokens.primary500,
         onPrimary: Colors.white,
         primaryContainer: DesignTokens.primary100,
         onPrimaryContainer: DesignTokens.primary900,
-        
         secondary: DesignTokens.secondary500,
         onSecondary: Colors.white,
         secondaryContainer: DesignTokens.secondary100,
         onSecondaryContainer: DesignTokens.secondary900,
-        
         tertiary: DesignTokens.info500,
         onTertiary: Colors.white,
         tertiaryContainer: DesignTokens.info100,
         onTertiaryContainer: DesignTokens.info900,
-        
         error: DesignTokens.error500,
         onError: Colors.white,
         errorContainer: DesignTokens.error50,
         onErrorContainer: DesignTokens.error700,
-        
         surface: DesignTokens.neutral50,
         onSurface: DesignTokens.neutral900,
         surfaceContainerLowest: Colors.white,
@@ -44,21 +40,18 @@ class EnhancedTheme {
         surfaceContainer: DesignTokens.neutral200,
         surfaceContainerHigh: DesignTokens.neutral300,
         surfaceContainerHighest: DesignTokens.neutral400,
-        
         outline: DesignTokens.neutral300,
         outlineVariant: DesignTokens.neutral200,
-        
         shadow: DesignTokens.neutral900,
         scrim: Colors.black54,
-        
         inverseSurface: DesignTokens.neutral900,
         onInverseSurface: DesignTokens.neutral100,
         inversePrimary: DesignTokens.primary200,
       ),
-      
+
       // Configurações de scaffold
       scaffoldBackgroundColor: DesignTokens.neutral50,
-      
+
       // Configurações de app bar
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
@@ -80,104 +73,100 @@ class EnhancedTheme {
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
-      
+
       // Tipografia aprimorada
       textTheme: _buildTextTheme(false),
-      
+
       // Componentes de botão
       elevatedButtonTheme: _buildElevatedButtonTheme(false),
       filledButtonTheme: _buildFilledButtonTheme(false),
       outlinedButtonTheme: _buildOutlinedButtonTheme(false),
       textButtonTheme: _buildTextButtonTheme(false),
-      
+
       // Componentes de input
       inputDecorationTheme: _buildInputDecorationTheme(false),
-      
+
       // Componentes de card
       cardTheme: _buildCardTheme(false),
-      
+
       // Componentes de chip
       chipTheme: _buildChipTheme(false),
-      
+
       // Componentes de switch
       switchTheme: _buildSwitchTheme(false),
-      
+
       // Componentes de checkbox
       checkboxTheme: _buildCheckboxTheme(false),
-      
+
       // Componentes de radio
       radioTheme: _buildRadioTheme(false),
-      
+
       // Componentes de slider
       sliderTheme: _buildSliderTheme(false),
-      
+
       // Componentes de progress indicator
       progressIndicatorTheme: _buildProgressIndicatorTheme(false),
-      
+
       // Componentes de snackbar
       snackBarTheme: _buildSnackBarTheme(false),
-      
+
       // Componentes de dialog
       dialogTheme: _buildDialogTheme(false),
-      
+
       // Componentes de bottom sheet
       bottomSheetTheme: _buildBottomSheetTheme(false),
-      
+
       // Componentes de navigation
       navigationBarTheme: _buildNavigationBarTheme(false),
       bottomNavigationBarTheme: _buildBottomNavigationBarTheme(false),
-      
+
       // Componentes de tab
       tabBarTheme: _buildTabBarTheme(false),
-      
+
       // Divisores
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: DesignTokens.neutral200,
         thickness: DesignTokens.borderWidthThin,
         space: DesignTokens.space16,
       ),
-      
+
       // Configurações de foco para acessibilidade
       focusColor: DesignTokens.primary500.withValues(alpha: 0.12),
       hoverColor: DesignTokens.primary500.withValues(alpha: 0.04),
       highlightColor: DesignTokens.primary500.withValues(alpha: 0.12),
       splashColor: DesignTokens.primary500.withValues(alpha: 0.12),
-      
+
       // Configurações visuais
       visualDensity: VisualDensity.adaptivePlatformDensity,
       materialTapTargetSize: MaterialTapTargetSize.padded,
     );
   }
-  
+
   /// Tema escuro aprimorado
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       fontFamily: GoogleFonts.inter().fontFamily,
       brightness: Brightness.dark,
-      
+
       // Color Scheme baseado nos tokens
       colorScheme: const ColorScheme.dark(
         primary: DesignTokens.primary400,
         onPrimary: DesignTokens.primary950,
         primaryContainer: DesignTokens.primary800,
         onPrimaryContainer: DesignTokens.primary100,
-        
         secondary: DesignTokens.secondary400,
         onSecondary: DesignTokens.secondary950,
         secondaryContainer: DesignTokens.secondary800,
         onSecondaryContainer: DesignTokens.secondary100,
-        
         tertiary: DesignTokens.info400,
         onTertiary: DesignTokens.info950,
         tertiaryContainer: DesignTokens.info800,
         onTertiaryContainer: DesignTokens.info100,
-        
         error: DesignTokens.error400,
         onError: DesignTokens.error950,
         errorContainer: DesignTokens.error800,
         onErrorContainer: DesignTokens.error100,
-        
         surface: DesignTokens.darkNeutral50,
         onSurface: DesignTokens.darkNeutral900,
         surfaceContainerLowest: DesignTokens.darkNeutral50,
@@ -185,21 +174,18 @@ class EnhancedTheme {
         surfaceContainer: DesignTokens.darkNeutral200,
         surfaceContainerHigh: DesignTokens.darkNeutral300,
         surfaceContainerHighest: DesignTokens.darkNeutral400,
-        
         outline: DesignTokens.darkNeutral300,
         outlineVariant: DesignTokens.darkNeutral200,
-        
         shadow: Colors.black,
         scrim: Colors.black87,
-        
         inverseSurface: DesignTokens.darkNeutral900,
         onInverseSurface: DesignTokens.darkNeutral100,
         inversePrimary: DesignTokens.primary600,
       ),
-      
+
       // Configurações de scaffold
       scaffoldBackgroundColor: DesignTokens.darkNeutral50,
-      
+
       // Configurações de app bar
       appBarTheme: AppBarTheme(
         backgroundColor: DesignTokens.darkNeutral100,
@@ -221,82 +207,84 @@ class EnhancedTheme {
           systemNavigationBarIconBrightness: Brightness.light,
         ),
       ),
-      
+
       // Tipografia aprimorada
       textTheme: _buildTextTheme(true),
-      
+
       // Componentes de botão
       elevatedButtonTheme: _buildElevatedButtonTheme(true),
       filledButtonTheme: _buildFilledButtonTheme(true),
       outlinedButtonTheme: _buildOutlinedButtonTheme(true),
       textButtonTheme: _buildTextButtonTheme(true),
-      
+
       // Componentes de input
       inputDecorationTheme: _buildInputDecorationTheme(true),
-      
+
       // Componentes de card
       cardTheme: _buildCardTheme(true),
-      
+
       // Componentes de chip
       chipTheme: _buildChipTheme(true),
-      
+
       // Componentes de switch
       switchTheme: _buildSwitchTheme(true),
-      
+
       // Componentes de checkbox
       checkboxTheme: _buildCheckboxTheme(true),
-      
+
       // Componentes de radio
       radioTheme: _buildRadioTheme(true),
-      
+
       // Componentes de slider
       sliderTheme: _buildSliderTheme(true),
-      
+
       // Componentes de progress indicator
       progressIndicatorTheme: _buildProgressIndicatorTheme(true),
-      
+
       // Componentes de snackbar
       snackBarTheme: _buildSnackBarTheme(true),
-      
+
       // Componentes de dialog
       dialogTheme: _buildDialogTheme(true),
-      
+
       // Componentes de bottom sheet
       bottomSheetTheme: _buildBottomSheetTheme(true),
-      
+
       // Componentes de navigation
       navigationBarTheme: _buildNavigationBarTheme(true),
       bottomNavigationBarTheme: _buildBottomNavigationBarTheme(true),
-      
+
       // Componentes de tab
       tabBarTheme: _buildTabBarTheme(true),
-      
+
       // Divisores
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: DesignTokens.darkNeutral200,
         thickness: DesignTokens.borderWidthThin,
         space: DesignTokens.space16,
       ),
-      
+
       // Configurações de foco para acessibilidade
       focusColor: DesignTokens.primary400.withValues(alpha: 0.12),
       hoverColor: DesignTokens.primary400.withValues(alpha: 0.04),
       highlightColor: DesignTokens.primary400.withValues(alpha: 0.12),
       splashColor: DesignTokens.primary400.withValues(alpha: 0.12),
-      
+
       // Configurações visuais
       visualDensity: VisualDensity.adaptivePlatformDensity,
       materialTapTargetSize: MaterialTapTargetSize.padded,
     );
   }
-  
+
   // ==================== BUILDERS DE COMPONENTES ====================
-  
+
   /// Constrói o tema de tipografia
   static TextTheme _buildTextTheme(bool isDark) {
-    final baseColor = isDark ? DesignTokens.darkNeutral900 : DesignTokens.neutral900;
-    final mutedColor = isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600;
-    
+    final baseColor =
+        isDark ? DesignTokens.darkNeutral900 : DesignTokens.neutral900;
+    final mutedColor =
+        isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600;
+
     return TextTheme(
       // Display styles
       displayLarge: GoogleFonts.inter(
@@ -320,7 +308,7 @@ class EnhancedTheme {
         height: DesignTokens.lineHeightTight,
         letterSpacing: -0.01,
       ),
-      
+
       // Headline styles
       headlineLarge: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize32,
@@ -341,7 +329,7 @@ class EnhancedTheme {
         color: baseColor,
         height: DesignTokens.lineHeightNormal,
       ),
-      
+
       // Title styles
       titleLarge: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize20,
@@ -361,7 +349,7 @@ class EnhancedTheme {
         color: baseColor,
         height: DesignTokens.lineHeightNormal,
       ),
-      
+
       // Body styles
       bodyLarge: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize16,
@@ -381,7 +369,7 @@ class EnhancedTheme {
         color: mutedColor,
         height: DesignTokens.lineHeightNormal,
       ),
-      
+
       // Label styles
       labelLarge: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize14,
@@ -406,19 +394,18 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de botões elevados
   static ElevatedButtonThemeData _buildElevatedButtonTheme(bool isDark) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
+        backgroundColor:
+            isDark ? DesignTokens.primary400 : DesignTokens.primary500,
         foregroundColor: Colors.white,
-        disabledBackgroundColor: isDark 
-            ? DesignTokens.darkNeutral300 
-            : DesignTokens.neutral300,
-        disabledForegroundColor: isDark 
-            ? DesignTokens.darkNeutral500 
-            : DesignTokens.neutral500,
+        disabledBackgroundColor:
+            isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+        disabledForegroundColor:
+            isDark ? DesignTokens.darkNeutral500 : DesignTokens.neutral500,
         elevation: 2,
         shadowColor: isDark ? Colors.black54 : DesignTokens.neutral400,
         surfaceTintColor: Colors.transparent,
@@ -426,7 +413,8 @@ class EnhancedTheme {
           horizontal: DesignTokens.space24,
           vertical: DesignTokens.space16,
         ),
-        minimumSize: const Size(DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
+        minimumSize: const Size(
+            DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
         ),
@@ -439,24 +427,24 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de botões preenchidos
   static FilledButtonThemeData _buildFilledButtonTheme(bool isDark) {
     return FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
+        backgroundColor:
+            isDark ? DesignTokens.primary400 : DesignTokens.primary500,
         foregroundColor: Colors.white,
-        disabledBackgroundColor: isDark 
-            ? DesignTokens.darkNeutral300 
-            : DesignTokens.neutral300,
-        disabledForegroundColor: isDark 
-            ? DesignTokens.darkNeutral500 
-            : DesignTokens.neutral500,
+        disabledBackgroundColor:
+            isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+        disabledForegroundColor:
+            isDark ? DesignTokens.darkNeutral500 : DesignTokens.neutral500,
         padding: const EdgeInsets.symmetric(
           horizontal: DesignTokens.space24,
           vertical: DesignTokens.space16,
         ),
-        minimumSize: const Size(DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
+        minimumSize: const Size(
+            DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
         ),
@@ -469,15 +457,15 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de botões com contorno
   static OutlinedButtonThemeData _buildOutlinedButtonTheme(bool isDark) {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
-        disabledForegroundColor: isDark 
-            ? DesignTokens.darkNeutral500 
-            : DesignTokens.neutral500,
+        foregroundColor:
+            isDark ? DesignTokens.primary400 : DesignTokens.primary500,
+        disabledForegroundColor:
+            isDark ? DesignTokens.darkNeutral500 : DesignTokens.neutral500,
         side: BorderSide(
           color: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
           width: DesignTokens.borderWidthDefault,
@@ -486,7 +474,8 @@ class EnhancedTheme {
           horizontal: DesignTokens.space24,
           vertical: DesignTokens.space16,
         ),
-        minimumSize: const Size(DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
+        minimumSize: const Size(
+            DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
         ),
@@ -499,20 +488,21 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de botões de texto
   static TextButtonThemeData _buildTextButtonTheme(bool isDark) {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
-        disabledForegroundColor: isDark 
-            ? DesignTokens.darkNeutral500 
-            : DesignTokens.neutral500,
+        foregroundColor:
+            isDark ? DesignTokens.primary400 : DesignTokens.primary500,
+        disabledForegroundColor:
+            isDark ? DesignTokens.darkNeutral500 : DesignTokens.neutral500,
         padding: const EdgeInsets.symmetric(
           horizontal: DesignTokens.space16,
           vertical: DesignTokens.space12,
         ),
-        minimumSize: const Size(DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
+        minimumSize: const Size(
+            DesignTokens.minTouchTarget, DesignTokens.minTouchTarget),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusLg),
         ),
@@ -525,7 +515,7 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de campos de input
   static InputDecorationTheme _buildInputDecorationTheme(bool isDark) {
     return InputDecorationTheme(
@@ -558,14 +548,14 @@ class EnhancedTheme {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: DesignTokens.error500,
           width: DesignTokens.borderWidthDefault,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(DesignTokens.radiusXl),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: DesignTokens.error500,
           width: DesignTokens.borderWidthThick,
         ),
@@ -587,7 +577,7 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   /// Constrói o tema de cards
   static CardTheme _buildCardTheme(bool isDark) {
     return CardTheme(
@@ -605,15 +595,19 @@ class EnhancedTheme {
       margin: const EdgeInsets.all(DesignTokens.space8),
     );
   }
-  
+
   /// Constrói o tema de chips
   static ChipThemeData _buildChipTheme(bool isDark) {
     return ChipThemeData(
-      backgroundColor: isDark ? DesignTokens.darkNeutral200 : DesignTokens.neutral200,
-      deleteIconColor: isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
-      disabledColor: isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+      backgroundColor:
+          isDark ? DesignTokens.darkNeutral200 : DesignTokens.neutral200,
+      deleteIconColor:
+          isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
+      disabledColor:
+          isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
       selectedColor: isDark ? DesignTokens.primary800 : DesignTokens.primary100,
-      secondarySelectedColor: isDark ? DesignTokens.secondary800 : DesignTokens.secondary100,
+      secondarySelectedColor:
+          isDark ? DesignTokens.secondary800 : DesignTokens.secondary100,
       padding: const EdgeInsets.symmetric(
         horizontal: DesignTokens.space12,
         vertical: DesignTokens.space8,
@@ -635,10 +629,10 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   // Métodos auxiliares para outros componentes (switch, checkbox, etc.)
   // Implementação similar seguindo os mesmos padrões...
-  
+
   static SwitchThemeData _buildSwitchTheme(bool isDark) {
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
@@ -661,7 +655,7 @@ class EnhancedTheme {
       }),
     );
   }
-  
+
   static CheckboxThemeData _buildCheckboxTheme(bool isDark) {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color>((states) {
@@ -683,7 +677,7 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   static RadioThemeData _buildRadioTheme(bool isDark) {
     return RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color>((states) {
@@ -697,14 +691,18 @@ class EnhancedTheme {
       }),
     );
   }
-  
+
   static SliderThemeData _buildSliderTheme(bool isDark) {
     return SliderThemeData(
-      activeTrackColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
-      inactiveTrackColor: isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+      activeTrackColor:
+          isDark ? DesignTokens.primary400 : DesignTokens.primary500,
+      inactiveTrackColor:
+          isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
       thumbColor: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
-      overlayColor: (isDark ? DesignTokens.primary400 : DesignTokens.primary500).withValues(alpha: 0.12),
-      valueIndicatorColor: isDark ? DesignTokens.darkNeutral800 : DesignTokens.neutral800,
+      overlayColor: (isDark ? DesignTokens.primary400 : DesignTokens.primary500)
+          .withValues(alpha: 0.12),
+      valueIndicatorColor:
+          isDark ? DesignTokens.darkNeutral800 : DesignTokens.neutral800,
       valueIndicatorTextStyle: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize12,
         fontWeight: DesignTokens.fontWeightMedium,
@@ -712,31 +710,35 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   static ProgressIndicatorThemeData _buildProgressIndicatorTheme(bool isDark) {
     return ProgressIndicatorThemeData(
       color: isDark ? DesignTokens.primary400 : DesignTokens.primary500,
-      linearTrackColor: isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
-      circularTrackColor: isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+      linearTrackColor:
+          isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
+      circularTrackColor:
+          isDark ? DesignTokens.darkNeutral300 : DesignTokens.neutral300,
     );
   }
-  
+
   static SnackBarThemeData _buildSnackBarTheme(bool isDark) {
     return SnackBarThemeData(
-      backgroundColor: isDark ? DesignTokens.darkNeutral800 : DesignTokens.neutral800,
+      backgroundColor:
+          isDark ? DesignTokens.darkNeutral800 : DesignTokens.neutral800,
       contentTextStyle: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize14,
         fontWeight: DesignTokens.fontWeightRegular,
         color: isDark ? DesignTokens.darkNeutral100 : DesignTokens.neutral100,
       ),
-      actionTextColor: isDark ? DesignTokens.primary300 : DesignTokens.primary200,
+      actionTextColor:
+          isDark ? DesignTokens.primary300 : DesignTokens.primary200,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(DesignTokens.radiusLg),
       ),
       behavior: SnackBarBehavior.floating,
     );
   }
-  
+
   static DialogTheme _buildDialogTheme(bool isDark) {
     return DialogTheme(
       backgroundColor: isDark ? DesignTokens.darkNeutral100 : Colors.white,
@@ -759,7 +761,7 @@ class EnhancedTheme {
       ),
     );
   }
-  
+
   static BottomSheetThemeData _buildBottomSheetTheme(bool isDark) {
     return BottomSheetThemeData(
       backgroundColor: isDark ? DesignTokens.darkNeutral100 : Colors.white,
@@ -775,14 +777,15 @@ class EnhancedTheme {
       modalBackgroundColor: isDark ? DesignTokens.darkNeutral100 : Colors.white,
     );
   }
-  
+
   static NavigationBarThemeData _buildNavigationBarTheme(bool isDark) {
     return NavigationBarThemeData(
       backgroundColor: isDark ? DesignTokens.darkNeutral100 : Colors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 3,
       shadowColor: isDark ? Colors.black26 : DesignTokens.neutral300,
-      indicatorColor: isDark ? DesignTokens.primary800 : DesignTokens.primary100,
+      indicatorColor:
+          isDark ? DesignTokens.primary800 : DesignTokens.primary100,
       labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((states) {
         final color = states.contains(WidgetState.selected)
             ? (isDark ? DesignTokens.primary300 : DesignTokens.primary700)
@@ -801,13 +804,16 @@ class EnhancedTheme {
       }),
     );
   }
-  
-  static BottomNavigationBarThemeData _buildBottomNavigationBarTheme(bool isDark) {
+
+  static BottomNavigationBarThemeData _buildBottomNavigationBarTheme(
+      bool isDark) {
     return BottomNavigationBarThemeData(
       backgroundColor: isDark ? DesignTokens.darkNeutral100 : Colors.white,
       elevation: 8,
-      selectedItemColor: isDark ? DesignTokens.primary300 : DesignTokens.primary700,
-      unselectedItemColor: isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
+      selectedItemColor:
+          isDark ? DesignTokens.primary300 : DesignTokens.primary700,
+      unselectedItemColor:
+          isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
       selectedLabelStyle: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize12,
         fontWeight: DesignTokens.fontWeightMedium,
@@ -819,11 +825,12 @@ class EnhancedTheme {
       type: BottomNavigationBarType.fixed,
     );
   }
-  
+
   static TabBarTheme _buildTabBarTheme(bool isDark) {
     return TabBarTheme(
       labelColor: isDark ? DesignTokens.primary300 : DesignTokens.primary700,
-      unselectedLabelColor: isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
+      unselectedLabelColor:
+          isDark ? DesignTokens.darkNeutral600 : DesignTokens.neutral600,
       labelStyle: GoogleFonts.inter(
         fontSize: DesignTokens.fontSize14,
         fontWeight: DesignTokens.fontWeightMedium,
@@ -840,7 +847,8 @@ class EnhancedTheme {
         borderRadius: BorderRadius.circular(DesignTokens.radiusSm),
       ),
       indicatorSize: TabBarIndicatorSize.label,
-      dividerColor: isDark ? DesignTokens.darkNeutral200 : DesignTokens.neutral200,
+      dividerColor:
+          isDark ? DesignTokens.darkNeutral200 : DesignTokens.neutral200,
     );
   }
 }

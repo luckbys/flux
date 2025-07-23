@@ -50,9 +50,9 @@ class MicroAnimations {
     double scale = 0.95,
   }) {
     return _ScaleOnTapWidget(
-      child: child,
       duration: duration,
       scale: scale,
+      child: child,
     );
   }
 

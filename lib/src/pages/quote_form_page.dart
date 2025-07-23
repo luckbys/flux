@@ -5,8 +5,6 @@ import '../stores/quote_store.dart';
 import '../models/quote.dart';
 import '../models/user.dart';
 import '../styles/app_theme.dart';
-import '../utils/color_extensions.dart';
-import '../components/loading_indicator.dart';
 
 class QuoteFormPage extends StatefulWidget {
   final Quote? quote;
@@ -28,12 +26,12 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
   final _termsController = TextEditingController();
   final _taxRateController = TextEditingController();
   final _discountController = TextEditingController();
-  
+
   QuotePriority _selectedPriority = QuotePriority.normal;
   DateTime? _validUntil;
   List<QuoteItem> _items = [];
   bool _isLoading = false;
-  
+
   // Mock customer data - in a real app, this would come from a customer selection
   late User _selectedCustomer;
   late User _selectedAgent;
@@ -55,7 +53,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
       status: UserStatus.online,
       createdAt: DateTime.now(),
     );
-    
+
     _selectedAgent = User(
       id: '550e8400-e29b-41d4-a716-446655440002',
       name: 'Maria Santos',
@@ -104,7 +102,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text(widget.quote != null ? 'Editar Orçamento' : 'Novo Orçamento'),
+        title:
+            Text(widget.quote != null ? 'Editar Orçamento' : 'Novo Orçamento'),
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.textColor,
         elevation: 1,
@@ -160,8 +159,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             Text(
               'Informações Básicas',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                 color: AppTheme.textColor,
-                ),
+                    color: AppTheme.textColor,
+                  ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -226,10 +225,10 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                             ? _formatDate(_validUntil!)
                             : 'Selecionar data',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                           color: _validUntil != null
-                               ? AppTheme.textColor
-                               : AppTheme.textColor.withValues(alpha: 0.7),
-                         ),
+                              color: _validUntil != null
+                                  ? AppTheme.textColor
+                                  : AppTheme.textColor.withValues(alpha: 0.7),
+                            ),
                       ),
                     ),
                   ),
@@ -256,8 +255,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             Text(
               'Cliente e Responsável',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppTheme.textColor,
-              ),
+                    color: AppTheme.textColor,
+                  ),
             ),
             const SizedBox(height: 16),
             Container(
@@ -265,18 +264,21 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    backgroundColor:
+                        AppTheme.primaryColor.withValues(alpha: 0.1),
                     child: Text(
                       _selectedCustomer.name.substring(0, 1).toUpperCase(),
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                         color: AppTheme.primaryColor,
-                       ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: AppTheme.primaryColor,
+                              ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -286,16 +288,21 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                       children: [
                         Text(
                           _selectedCustomer.name,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                             color: AppTheme.textColor,
-                             fontWeight: FontWeight.w500,
-                           ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppTheme.textColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                         Text(
                           _selectedCustomer.email,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                             color: AppTheme.textColor.withValues(alpha: 0.7),
-                           ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color:
+                                    AppTheme.textColor.withValues(alpha: 0.7),
+                              ),
                         ),
                       ],
                     ),
@@ -305,7 +312,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                       // In a real app, this would open a customer selection dialog
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Seleção de cliente em desenvolvimento'),
+                          content:
+                              Text('Seleção de cliente em desenvolvimento'),
                         ),
                       );
                     },
@@ -326,12 +334,13 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: AppTheme.successColor.withValues(alpha: 0.1),
+                    backgroundColor:
+                        AppTheme.successColor.withValues(alpha: 0.1),
                     child: Text(
                       _selectedAgent.name.substring(0, 1).toUpperCase(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                         color: AppTheme.successColor,
-                       ),
+                            color: AppTheme.successColor,
+                          ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -341,16 +350,21 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                       children: [
                         Text(
                           'Responsável: ${_selectedAgent.name}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                             color: AppTheme.textColor,
-                             fontWeight: FontWeight.w500,
-                           ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                         Text(
                           _selectedAgent.email,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                             color: AppTheme.textColor.withValues(alpha: 0.7),
-                           ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color:
+                                    AppTheme.textColor.withValues(alpha: 0.7),
+                              ),
                         ),
                       ],
                     ),
@@ -380,8 +394,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 Text(
                   'Itens do Orçamento',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                     color: AppTheme.textColor,
-                   ),
+                        color: AppTheme.textColor,
+                      ),
                 ),
                 const Spacer(),
                 ElevatedButton.icon(
@@ -416,15 +430,15 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                       Text(
                         'Nenhum item adicionado',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                           color: AppTheme.textColor.withValues(alpha: 0.7),
-                         ),
+                              color: AppTheme.textColor.withValues(alpha: 0.7),
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Clique em "Adicionar Item" para começar',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                           color: AppTheme.textColor.withValues(alpha: 0.7),
-                         ),
+                              color: AppTheme.textColor.withValues(alpha: 0.7),
+                            ),
                       ),
                     ],
                   ),
@@ -437,7 +451,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppTheme.backgroundColor,
-                    borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
@@ -445,39 +459,55 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                           flex: 3,
                           child: Text(
                             'Descrição',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                               color: AppTheme.textColor.withValues(alpha: 0.7),
-                               fontWeight: FontWeight.w500,
-                             ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      AppTheme.textColor.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                         ),
                         Expanded(
                           child: Text(
                             'Qtd.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                               color: AppTheme.textColor.withValues(alpha: 0.7),
-                               fontWeight: FontWeight.w500,
-                             ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      AppTheme.textColor.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                         ),
                         Expanded(
                           child: Text(
                             'Preço Unit.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textColor.withValues(alpha: 0.7),
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      AppTheme.textColor.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                         ),
                         Expanded(
                           child: Text(
                             'Total',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textColor.withValues(alpha: 0.7),
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      AppTheme.textColor.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
                             textAlign: TextAlign.right,
                           ),
                         ),
@@ -490,7 +520,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _items.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = _items[index];
                       return _buildItemRow(item, index);
@@ -522,17 +553,18 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 Text(
                   item.description,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                     color: AppTheme.textColor,
-                     fontWeight: FontWeight.w500,
-                   ),
+                        color: AppTheme.textColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 if (item.notes != null && item.notes!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     item.notes!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                       color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
-                     ),
+                          color: AppTheme.getTextColor(context)
+                              .withValues(alpha: 0.7),
+                        ),
                   ),
                 ],
               ],
@@ -542,8 +574,9 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             child: Text(
               '${item.quantity} ${item.unit}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                 color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
-               ),
+                    color:
+                        AppTheme.getTextColor(context).withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -551,8 +584,9 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             child: Text(
               'R\$ ${item.unitPrice.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                 color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
-               ),
+                    color:
+                        AppTheme.getTextColor(context).withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -560,9 +594,9 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             child: Text(
               'R\$ ${item.total.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                 color: AppTheme.getTextColor(context),
-                 fontWeight: FontWeight.w500,
-               ),
+                    color: AppTheme.getTextColor(context),
+                    fontWeight: FontWeight.w500,
+                  ),
               textAlign: TextAlign.right,
             ),
           ),
@@ -580,7 +614,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => _removeItem(index),
-                  icon: Icon(Icons.delete, size: 18, color: AppTheme.errorColor),
+                  icon: const Icon(Icons.delete,
+                      size: 18, color: AppTheme.errorColor),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -612,8 +647,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             Text(
               'Informações Financeiras',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                 color: AppTheme.textColor,
-               ),
+                    color: AppTheme.textColor,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -663,7 +698,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 children: [
                   _buildTotalRow('Subtotal', subtotal),
                   if (discount > 0) _buildTotalRow('Desconto', -discount),
-                  if (taxRate > 0) _buildTotalRow('Impostos ($taxRate%)', taxAmount),
+                  if (taxRate > 0)
+                    _buildTotalRow('Impostos ($taxRate%)', taxAmount),
                   const Divider(),
                   _buildTotalRow('Total', total, isTotal: true),
                 ],
@@ -683,14 +719,20 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
         children: [
           Text(
             label,
-            style: (isTotal ? Theme.of(context).textTheme.headlineSmall : Theme.of(context).textTheme.bodyMedium)?.copyWith(
+            style: (isTotal
+                    ? Theme.of(context).textTheme.headlineSmall
+                    : Theme.of(context).textTheme.bodyMedium)
+                ?.copyWith(
               color: AppTheme.textColor,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
             'R\$ ${amount.toStringAsFixed(2)}',
-            style: (isTotal ? Theme.of(context).textTheme.headlineSmall : Theme.of(context).textTheme.bodyMedium)?.copyWith(
+            style: (isTotal
+                    ? Theme.of(context).textTheme.headlineSmall
+                    : Theme.of(context).textTheme.bodyMedium)
+                ?.copyWith(
               color: isTotal ? AppTheme.primaryColor : AppTheme.textColor,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
@@ -714,8 +756,8 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
             Text(
               'Informações Adicionais',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppTheme.textColor,
-              ),
+                    color: AppTheme.textColor,
+                  ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -787,7 +829,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null) {
       setState(() => _validUntil = date);
     }
@@ -845,7 +887,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
 
     try {
       final quoteStore = context.read<QuoteStore>();
-      
+
       if (widget.quote != null) {
         // Atualizar orçamento existente
         final success = await quoteStore.updateQuote(
@@ -866,7 +908,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
               : _termsController.text.trim(),
           validUntil: _validUntil,
         );
-        
+
         if (success && mounted) {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -896,7 +938,7 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
               : _termsController.text.trim(),
           validUntil: _validUntil,
         );
-        
+
         if (quote != null && mounted) {
           Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1023,7 +1065,8 @@ class _ItemFormDialogState extends State<_ItemFormDialog> {
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*')),
                       ],
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {

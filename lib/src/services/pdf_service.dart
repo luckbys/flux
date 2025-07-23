@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 import '../models/quote.dart';
 
 class PdfService {
-  static final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+  static final _currencyFormat =
+      NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
   static final _dateFormat = DateFormat('dd/MM/yyyy');
 
   /// Gera PDF do orçamento
@@ -34,10 +35,10 @@ class PdfService {
             _buildItemsTable(quote, font, fontBold),
             pw.SizedBox(height: 20),
             _buildTotals(quote, font, fontBold),
-            if (quote.notes != null && quote.notes!.isNotEmpty) ...
-              _buildNotes(quote, font, fontBold),
-            if (quote.terms != null && quote.terms!.isNotEmpty) ...
-              _buildTerms(quote, font, fontBold),
+            if (quote.notes != null && quote.notes!.isNotEmpty)
+              ..._buildNotes(quote, font, fontBold),
+            if (quote.terms != null && quote.terms!.isNotEmpty)
+              ..._buildTerms(quote, font, fontBold),
             pw.Spacer(),
             _buildFooter(quote, font),
           ];
@@ -87,7 +88,7 @@ class PdfService {
             ),
             pw.Text(
               'Sistema de Gestão',
-              style: pw.TextStyle(
+              style: const pw.TextStyle(
                 fontSize: 12,
                 color: PdfColors.grey600,
               ),
@@ -99,7 +100,8 @@ class PdfService {
   }
 
   /// Informações do orçamento
-  static pw.Widget _buildQuoteInfo(Quote quote, pw.Font font, pw.Font fontBold) {
+  static pw.Widget _buildQuoteInfo(
+      Quote quote, pw.Font font, pw.Font fontBold) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(16),
       decoration: pw.BoxDecoration(
@@ -120,7 +122,8 @@ class PdfService {
                 child: _buildInfoItem('Título', quote.title, font, fontBold),
               ),
               pw.Expanded(
-                child: _buildInfoItem('Status', _getStatusLabel(quote.status), font, fontBold),
+                child: _buildInfoItem(
+                    'Status', _getStatusLabel(quote.status), font, fontBold),
               ),
             ],
           ),
@@ -128,10 +131,17 @@ class PdfService {
           pw.Row(
             children: [
               pw.Expanded(
-                child: _buildInfoItem('Data de Criação', _dateFormat.format(quote.createdAt), font, fontBold),
+                child: _buildInfoItem('Data de Criação',
+                    _dateFormat.format(quote.createdAt), font, fontBold),
               ),
               pw.Expanded(
-                child: _buildInfoItem('Válido até', quote.validUntil != null ? _dateFormat.format(quote.validUntil!) : 'Não definido', font, fontBold),
+                child: _buildInfoItem(
+                    'Válido até',
+                    quote.validUntil != null
+                        ? _dateFormat.format(quote.validUntil!)
+                        : 'Não definido',
+                    font,
+                    fontBold),
               ),
             ],
           ),
@@ -145,7 +155,8 @@ class PdfService {
   }
 
   /// Informações do cliente
-  static pw.Widget _buildCustomerInfo(Quote quote, pw.Font font, pw.Font fontBold) {
+  static pw.Widget _buildCustomerInfo(
+      Quote quote, pw.Font font, pw.Font fontBold) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(16),
       decoration: pw.BoxDecoration(
@@ -163,7 +174,8 @@ class PdfService {
           _buildInfoItem('Nome', quote.customer.name, font, fontBold),
           if (quote.assignedAgent != null) ...[
             pw.SizedBox(height: 8),
-            _buildInfoItem('Agente Responsável', quote.assignedAgent!.name, font, fontBold),
+            _buildInfoItem('Agente Responsável', quote.assignedAgent!.name,
+                font, fontBold),
           ],
         ],
       ),
@@ -171,7 +183,8 @@ class PdfService {
   }
 
   /// Tabela de itens
-  static pw.Widget _buildItemsTable(Quote quote, pw.Font font, pw.Font fontBold) {
+  static pw.Widget _buildItemsTable(
+      Quote quote, pw.Font font, pw.Font fontBold) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -201,13 +214,17 @@ class PdfService {
             ),
             // Itens
             ...quote.items.map((item) => pw.TableRow(
-              children: [
-                _buildTableCell(item.description, font),
-                _buildTableCell(item.quantity.toString(), font, alignment: pw.Alignment.center),
-                _buildTableCell(_currencyFormat.format(item.unitPrice), font, alignment: pw.Alignment.centerRight),
-                _buildTableCell(_currencyFormat.format(item.total), font, alignment: pw.Alignment.centerRight),
-              ],
-            )),
+                  children: [
+                    _buildTableCell(item.description, font),
+                    _buildTableCell(item.quantity.toString(), font,
+                        alignment: pw.Alignment.center),
+                    _buildTableCell(
+                        _currencyFormat.format(item.unitPrice), font,
+                        alignment: pw.Alignment.centerRight),
+                    _buildTableCell(_currencyFormat.format(item.total), font,
+                        alignment: pw.Alignment.centerRight),
+                  ],
+                )),
           ],
         ),
       ],
@@ -228,17 +245,28 @@ class PdfService {
           ),
           child: pw.Column(
             children: [
-              _buildTotalRow('Subtotal:', _currencyFormat.format(quote.subtotal), font, fontBold),
+              _buildTotalRow('Subtotal:',
+                  _currencyFormat.format(quote.subtotal), font, fontBold),
               if (quote.additionalDiscount > 0) ...[
                 pw.SizedBox(height: 4),
-                _buildTotalRow('Desconto:', '-${_currencyFormat.format(quote.additionalDiscount)}', font, fontBold),
+                _buildTotalRow(
+                    'Desconto:',
+                    '-${_currencyFormat.format(quote.additionalDiscount)}',
+                    font,
+                    fontBold),
               ],
               if (quote.taxRate > 0) ...[
                 pw.SizedBox(height: 4),
-                _buildTotalRow('Impostos (${quote.taxRate.toStringAsFixed(1)}%):', _currencyFormat.format(quote.taxAmount), font, fontBold),
+                _buildTotalRow(
+                    'Impostos (${quote.taxRate.toStringAsFixed(1)}%):',
+                    _currencyFormat.format(quote.taxAmount),
+                    font,
+                    fontBold),
               ],
               pw.Divider(color: PdfColors.grey400),
-              _buildTotalRow('TOTAL:', _currencyFormat.format(quote.total), fontBold, fontBold, isTotal: true),
+              _buildTotalRow('TOTAL:', _currencyFormat.format(quote.total),
+                  fontBold, fontBold,
+                  isTotal: true),
             ],
           ),
         ),
@@ -247,7 +275,8 @@ class PdfService {
   }
 
   /// Observações
-  static List<pw.Widget> _buildNotes(Quote quote, pw.Font font, pw.Font fontBold) {
+  static List<pw.Widget> _buildNotes(
+      Quote quote, pw.Font font, pw.Font fontBold) {
     return [
       pw.SizedBox(height: 20),
       pw.Text(
@@ -271,7 +300,8 @@ class PdfService {
   }
 
   /// Termos e condições
-  static List<pw.Widget> _buildTerms(Quote quote, pw.Font font, pw.Font fontBold) {
+  static List<pw.Widget> _buildTerms(
+      Quote quote, pw.Font font, pw.Font fontBold) {
     return [
       pw.SizedBox(height: 20),
       pw.Text(
@@ -306,11 +336,13 @@ class PdfService {
         children: [
           pw.Text(
             'Gerado em ${_dateFormat.format(DateTime.now())}',
-            style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: font, fontSize: 10, color: PdfColors.grey600),
           ),
           pw.Text(
             'BKCRM - Sistema de Gestão',
-            style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: font, fontSize: 10, color: PdfColors.grey600),
           ),
         ],
       ),
@@ -318,13 +350,15 @@ class PdfService {
   }
 
   /// Helper para criar item de informação
-  static pw.Widget _buildInfoItem(String label, String value, pw.Font font, pw.Font fontBold) {
+  static pw.Widget _buildInfoItem(
+      String label, String value, pw.Font font, pw.Font fontBold) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
           label,
-          style: pw.TextStyle(font: fontBold, fontSize: 10, color: PdfColors.grey600),
+          style: pw.TextStyle(
+              font: fontBold, fontSize: 10, color: PdfColors.grey600),
         ),
         pw.SizedBox(height: 2),
         pw.Text(
@@ -336,7 +370,8 @@ class PdfService {
   }
 
   /// Helper para criar célula da tabela
-  static pw.Widget _buildTableCell(String text, pw.Font font, {bool isHeader = false, pw.Alignment? alignment}) {
+  static pw.Widget _buildTableCell(String text, pw.Font font,
+      {bool isHeader = false, pw.Alignment? alignment}) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(8),
       alignment: alignment ?? pw.Alignment.centerLeft,
@@ -352,7 +387,9 @@ class PdfService {
   }
 
   /// Helper para criar linha de total
-  static pw.Widget _buildTotalRow(String label, String value, pw.Font labelFont, pw.Font valueFont, {bool isTotal = false}) {
+  static pw.Widget _buildTotalRow(
+      String label, String value, pw.Font labelFont, pw.Font valueFont,
+      {bool isTotal = false}) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [

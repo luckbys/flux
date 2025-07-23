@@ -198,7 +198,7 @@ class ChatService {
           .from('conversation_participants')
           .delete()
           .eq('conversation_id', chatId)
-        .eq('user_id', userId);
+          .eq('user_id', userId);
 
       AppConfig.log('Participante removido com sucesso', tag: 'ChatService');
     } catch (e) {
@@ -227,7 +227,7 @@ class ChatService {
   Stream<List<Chat>> watchChats() {
     final userId = _supabaseService.currentUserId;
     if (userId == null) {
-      return Stream.empty();
+      return const Stream.empty();
     }
 
     return _supabaseService.client

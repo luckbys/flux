@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Design Tokens para o BKCRM
 /// Implementa um sistema de design consistente com suporte completo
 /// a modo escuro, acessibilidade WCAG 2.1 AA e animações micro-interativas
 class DesignTokens {
   // ==================== CORES SEMÂNTICAS ====================
-  
+
   /// Cores primárias do sistema
   static const Color primary50 = Color(0xFFEFF6FF);
   static const Color primary100 = Color(0xFFDBEAFE);
@@ -37,11 +36,11 @@ class DesignTokens {
   static const Color success50 = Color(0xFFF0FDF4);
   static const Color success500 = Color(0xFF22C55E);
   static const Color success700 = Color(0xFF15803D);
-  
+
   static const Color warning50 = Color(0xFFFFFBEB);
   static const Color warning500 = Color(0xFFF59E0B);
   static const Color warning700 = Color(0xFFA16207);
-  
+
   static const Color error50 = Color(0xFFFEF2F2);
   static const Color error100 = Color(0xFFFEF2F2);
   static const Color error200 = Color(0xFFFECACA);
@@ -51,7 +50,7 @@ class DesignTokens {
   static const Color error700 = Color(0xFFC53030);
   static const Color error800 = Color(0xFF991B1B);
   static const Color error950 = Color(0xFF450A0A);
-  
+
   static const Color info50 = Color(0xFFEFF6FF);
   static const Color info100 = Color(0xFFDBEAFE);
   static const Color info400 = Color(0xFF60A5FA);
@@ -87,7 +86,7 @@ class DesignTokens {
   static const Color darkNeutral900 = Color(0xFFFAFAFA);
 
   // ==================== TIPOGRAFIA ====================
-  
+
   /// Escala tipográfica baseada em proporção áurea
   static const double fontSize10 = 10.0;
   static const double fontSize12 = 12.0;
@@ -116,7 +115,7 @@ class DesignTokens {
   static const double lineHeightRelaxed = 1.75;
 
   // ==================== ESPAÇAMENTOS ====================
-  
+
   /// Sistema de espaçamento baseado em múltiplos de 4px
   static const double space0 = 0.0;
   static const double space1 = 1.0;
@@ -140,7 +139,7 @@ class DesignTokens {
   static const double space128 = 128.0;
 
   // ==================== BORDAS E RAIOS ====================
-  
+
   /// Raios de borda consistentes
   static const double radiusNone = 0.0;
   static const double radiusXs = 2.0;
@@ -161,10 +160,10 @@ class DesignTokens {
   static const double borderWidthExtra = 4.0;
 
   // ==================== SOMBRAS ====================
-  
+
   /// Sombras para elevação (Material Design 3)
   static const List<BoxShadow> shadowNone = [];
-  
+
   static const List<BoxShadow> shadowSm = [
     BoxShadow(
       color: Color(0x0D000000),
@@ -172,7 +171,7 @@ class DesignTokens {
       offset: Offset(0, 1),
     ),
   ];
-  
+
   static const List<BoxShadow> shadowMd = [
     BoxShadow(
       color: Color(0x1A000000),
@@ -185,7 +184,7 @@ class DesignTokens {
       offset: Offset(0, 2),
     ),
   ];
-  
+
   static const List<BoxShadow> shadowLg = [
     BoxShadow(
       color: Color(0x1A000000),
@@ -198,7 +197,7 @@ class DesignTokens {
       offset: Offset(0, 4),
     ),
   ];
-  
+
   static const List<BoxShadow> shadowXl = [
     BoxShadow(
       color: Color(0x19000000),
@@ -211,26 +210,26 @@ class DesignTokens {
       offset: Offset(0, 8),
     ),
   ];
-  
+
   // Sombras individuais para compatibilidade
   static const BoxShadow shadowSmSingle = BoxShadow(
     color: Color(0x0F000000),
     blurRadius: 2,
     offset: Offset(0, 1),
   );
-  
+
   static const BoxShadow shadowMdSingle = BoxShadow(
     color: Color(0x1A000000),
     blurRadius: 4,
     offset: Offset(0, 2),
   );
-  
+
   static const BoxShadow shadowLgSingle = BoxShadow(
-     color: Color(0x1F000000),
-     blurRadius: 8,
-     offset: Offset(0, 4),
-   );
-  
+    color: Color(0x1F000000),
+    blurRadius: 8,
+    offset: Offset(0, 4),
+  );
+
   static const BoxShadow shadowXlSingle = BoxShadow(
     color: Color(0x25000000),
     blurRadius: 12,
@@ -238,7 +237,7 @@ class DesignTokens {
   );
 
   // ==================== ANIMAÇÕES ====================
-  
+
   /// Durações de animação baseadas em Material Design
   static const Duration durationInstant = Duration(milliseconds: 0);
   static const Duration durationFast = Duration(milliseconds: 150);
@@ -260,7 +259,7 @@ class DesignTokens {
   static const Curve curveElastic = Curves.elasticOut;
 
   // ==================== BREAKPOINTS RESPONSIVOS ====================
-  
+
   /// Breakpoints para design responsivo
   static const double breakpointXs = 480.0;
   static const double breakpointSm = 640.0;
@@ -270,27 +269,27 @@ class DesignTokens {
   static const double breakpoint2xl = 1536.0;
 
   // ==================== ACESSIBILIDADE ====================
-  
+
   /// Tamanhos mínimos para toque (WCAG 2.1 AA)
   static const double minTouchTarget = 44.0;
   static const double recommendedTouchTarget = 48.0;
-  
+
   /// Contrastes mínimos para acessibilidade
   static const double contrastRatioAA = 4.5;
   static const double contrastRatioAAA = 7.0;
-  
+
   /// Cores com contraste adequado para texto
   static Color getAccessibleTextColor(Color backgroundColor) {
     final luminance = backgroundColor.computeLuminance();
     return luminance > 0.5 ? neutral900 : neutral50;
   }
-  
+
   /// Verifica se uma cor tem contraste suficiente
   static bool hasAccessibleContrast(Color foreground, Color background) {
     final ratio = _calculateContrastRatio(foreground, background);
     return ratio >= contrastRatioAA;
   }
-  
+
   static double _calculateContrastRatio(Color color1, Color color2) {
     final luminance1 = color1.computeLuminance();
     final luminance2 = color2.computeLuminance();
@@ -300,7 +299,7 @@ class DesignTokens {
   }
 
   // ==================== GLASSMORPHISM ====================
-  
+
   /// Efeitos de vidro para o design system
   static BoxDecoration getGlassDecoration({
     bool isDark = false,
@@ -310,12 +309,12 @@ class DesignTokens {
     List<BoxShadow>? customShadows,
   }) {
     return BoxDecoration(
-      color: isDark 
+      color: isDark
           ? Colors.white.withValues(alpha: opacity)
           : Colors.black.withValues(alpha: opacity),
       borderRadius: BorderRadius.circular(radius),
       border: Border.all(
-        color: isDark 
+        color: isDark
             ? Colors.white.withValues(alpha: borderOpacity)
             : Colors.black.withValues(alpha: borderOpacity),
         width: borderWidthThin,
@@ -325,23 +324,24 @@ class DesignTokens {
   }
 
   // ==================== UTILITÁRIOS DE TEMA ====================
-  
+
   /// Obtém a cor baseada no tema atual
   static Color getColorByTheme({
     required BuildContext context,
     required Color lightColor,
     required Color darkColor,
   }) {
-    return Theme.of(context).brightness == Brightness.dark 
-        ? darkColor 
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkColor
         : lightColor;
   }
-  
+
   /// Obtém a cor de texto com contraste adequado
-  static Color getContrastingTextColor(BuildContext context, Color backgroundColor) {
+  static Color getContrastingTextColor(
+      BuildContext context, Color backgroundColor) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final luminance = backgroundColor.computeLuminance();
-    
+
     if (isDark) {
       return luminance > 0.5 ? darkNeutral50 : darkNeutral900;
     } else {
@@ -354,7 +354,7 @@ class DesignTokens {
 extension DesignTokensExtension on BuildContext {
   /// Verifica se está no modo escuro
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
-  
+
   /// Obtém cor baseada no tema
   Color colorByTheme({required Color light, required Color dark}) {
     return DesignTokens.getColorByTheme(
@@ -363,7 +363,7 @@ extension DesignTokensExtension on BuildContext {
       darkColor: dark,
     );
   }
-  
+
   /// Obtém cor de texto com contraste adequado
   Color contrastingTextColor(Color backgroundColor) {
     return DesignTokens.getContrastingTextColor(this, backgroundColor);

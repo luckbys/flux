@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../models/message.dart';
 import '../../models/ticket.dart';
-import '../../models/user.dart';
 
 class GeminiService {
   static const String _apiKey =

@@ -5,12 +5,9 @@ import '../../models/chat.dart';
 import '../../models/message.dart';
 import '../../models/user.dart';
 import '../../models/ticket.dart';
-import '../../components/chat/messages/message_bubble.dart';
 import '../../components/chat/chat_input.dart';
 import '../../components/ui/user_avatar.dart';
 import '../../services/ai/gemini_service.dart';
-import '../../styles/app_theme.dart';
-import '../../utils/color_extensions.dart';
 import '../../styles/design_tokens.dart';
 import '../../components/ui/micro_animations.dart';
 import '../../components/ui/toast_message.dart';
@@ -19,9 +16,9 @@ class ChatPage extends StatefulWidget {
   final Chat chat;
 
   const ChatPage({
-    Key? key,
+    super.key,
     required this.chat,
-  }) : super(key: key);
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -30,7 +27,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   late Chat _chat;
   final List<Message> _messages = [];
-  final List<Message> _filteredMessages = [];
+
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
@@ -43,7 +40,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   late AnimationController _fabAnimationController;
   late AnimationController _suggestionAnimationController;
   late Animation<double> _appBarAnimation;
-  late Animation<double> _messageAnimation;
+
   late Animation<double> _fabAnimation;
   late Animation<double> _suggestionAnimation;
 
@@ -52,11 +49,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   bool _showAISuggestions = false;
   bool _isSearchMode = false;
   bool _showScrollToBottom = false;
-  bool _isOnline = true;
+  final bool _isOnline = true;
   bool _isLoading = false;
-  int _unreadCount = 0;
+  final int _unreadCount = 0;
   String _searchQuery = '';
-  Message? _replyingTo;
 
   List<String> _aiSuggestions = [];
   List<Message> _searchResults = [];
@@ -89,10 +85,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       parent: _appBarAnimationController,
       curve: Curves.easeOutCubic,
     );
-    _messageAnimation = CurvedAnimation(
-      parent: _messageAnimationController,
-      curve: Curves.elasticOut,
-    );
+
     _fabAnimation = CurvedAnimation(
       parent: _fabAnimationController,
       curve: Curves.easeInOut,
@@ -125,14 +118,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
     // Mock messages - substituir por dados reais
     User participant = User(
-  id: 'participant_1',
-  name: 'João Silva',
-  email: 'joao@example.com',
-  avatarUrl: '',
-  role: UserRole.customer,
-  status: UserStatus.online,
-  createdAt: DateTime.now(),
-);
+      id: 'participant_1',
+      name: 'João Silva',
+      email: 'joao@example.com',
+      avatarUrl: '',
+      role: UserRole.customer,
+      status: UserStatus.online,
+      createdAt: DateTime.now(),
+    );
     final currentUser = _getMockCurrentUser();
 
     _messages.addAll([
@@ -147,34 +140,41 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       ),
       Message(
         id: '2',
-        content: 'Oi, estou enfrentando lentidão no sistema desde manhã. Pode ajudar?',
+        content:
+            'Oi, estou enfrentando lentidão no sistema desde manhã. Pode ajudar?',
         type: MessageType.text,
         sender: currentUser,
         chatId: _chat.id,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
+        createdAt:
+            DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
         status: MessageStatus.read,
       ),
       Message(
         id: '3',
-        content: 'Entendi. Pode descrever o problema com mais detalhes? Qual parte do sistema está lenta?',
+        content:
+            'Entendi. Pode descrever o problema com mais detalhes? Qual parte do sistema está lenta?',
         type: MessageType.text,
         sender: participant,
         chatId: _chat.id,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
+        createdAt:
+            DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
         status: MessageStatus.read,
       ),
       Message(
         id: '4',
-        content: 'Principalmente ao carregar relatórios. Demora mais de 30 segundos.',
+        content:
+            'Principalmente ao carregar relatórios. Demora mais de 30 segundos.',
         type: MessageType.text,
         sender: currentUser,
         chatId: _chat.id,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 15)),
+        createdAt:
+            DateTime.now().subtract(const Duration(hours: 1, minutes: 15)),
         status: MessageStatus.read,
       ),
       Message(
         id: '5',
-        content: 'Obrigado. Estamos investigando. Enquanto isso, tente limpar o cache do navegador.',
+        content:
+            'Obrigado. Estamos investigando. Enquanto isso, tente limpar o cache do navegador.',
         type: MessageType.text,
         sender: participant,
         chatId: _chat.id,
@@ -192,7 +192,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       ),
       Message(
         id: '7',
-        content: 'Vamos escalar para a equipe técnica. Você será notificado em breve.',
+        content:
+            'Vamos escalar para a equipe técnica. Você será notificado em breve.',
         type: MessageType.text,
         sender: participant,
         chatId: _chat.id,
@@ -385,7 +386,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                     children: [
                       Text(
                         participant.name,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: DesignTokens.neutral900,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
@@ -536,7 +537,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                           color: DesignTokens.neutral700,
                         ),
                         const SizedBox(width: 12),
-                        Text(
+                        const Text(
                           'Informações do Chat',
                           style: TextStyle(
                             color: DesignTokens.neutral700,
@@ -555,7 +556,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                           color: DesignTokens.neutral700,
                         ),
                         const SizedBox(width: 12),
-                        Text(
+                        const Text(
                           'Criar Ticket',
                           style: TextStyle(
                             color: DesignTokens.neutral700,
@@ -574,7 +575,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                           color: DesignTokens.neutral700,
                         ),
                         const SizedBox(width: 12),
-                        Text(
+                        const Text(
                           'Arquivar Chat',
                           style: TextStyle(
                             color: DesignTokens.neutral700,
@@ -594,7 +595,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                           color: DesignTokens.error500,
                         ),
                         const SizedBox(width: 12),
-                        Text(
+                        const Text(
                           'Limpar conversa',
                           style: TextStyle(
                             color: DesignTokens.error500,
@@ -615,7 +616,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(
@@ -633,7 +634,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: 'Buscar mensagens...',
-                hintStyle: TextStyle(
+                hintStyle: const TextStyle(
                   color: DesignTokens.neutral500,
                 ),
                 prefixIcon: Icon(
@@ -654,13 +655,13 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                     : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
+                  borderSide: const BorderSide(
                     color: DesignTokens.neutral200,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
+                  borderSide: const BorderSide(
                     color: DesignTokens.primary500,
                     width: 2,
                   ),
@@ -672,7 +673,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                 filled: true,
                 fillColor: DesignTokens.neutral50,
               ),
-              style: TextStyle(color: DesignTokens.neutral900),
+              style: const TextStyle(color: DesignTokens.neutral900),
             ),
           ),
         ],
@@ -685,7 +686,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: DesignTokens.primary500.withValues(alpha: 0.05),
-        border: Border(
+        border: const Border(
           bottom: BorderSide(
             color: DesignTokens.neutral200,
             width: 1,
@@ -702,7 +703,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           const SizedBox(width: 8),
           Text(
             '${_searchResults.length} resultado(s) encontrado(s)',
-            style: TextStyle(
+            style: const TextStyle(
               color: DesignTokens.primary500,
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -760,7 +761,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                 color: Colors.white,
                 border: isDesktop
                     ? null
-                    : Border(
+                    : const Border(
                         bottom: BorderSide(
                           color: DesignTokens.neutral200,
                           width: 1,
@@ -818,7 +819,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                             const SizedBox(width: 8),
                             Text(
                               suggestion,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: DesignTokens.primary500,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -846,7 +847,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     // Agrupar mensagens por data
     Map<DateTime, List<Message>> groupedMessages = {};
     for (var message in messagesToShow) {
-      final date = DateTime(message.createdAt.year, message.createdAt.month, message.createdAt.day);
+      final date = DateTime(message.createdAt.year, message.createdAt.month,
+          message.createdAt.day);
       if (!groupedMessages.containsKey(date)) {
         groupedMessages[date] = [];
       }
@@ -871,10 +873,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               children: [
                 // Cabeçalho de data
                 Container(
-                  margin: EdgeInsets.symmetric(vertical: 16),
+                  margin: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
                     _formatDate(date),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: DesignTokens.neutral500,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -887,13 +889,16 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
                   return Container(
                     margin: EdgeInsets.only(bottom: isDesktop ? 16 : 12),
-                    constraints: isDesktop ? const BoxConstraints(maxWidth: 800) : null,
+                    constraints:
+                        isDesktop ? const BoxConstraints(maxWidth: 800) : null,
                     alignment: isDesktop ? Alignment.center : null,
                     child: _buildSimpleMessageBubble(
-                      message, currentUser, isFromCurrentUser,
+                      message,
+                      currentUser,
+                      isFromCurrentUser,
                     ),
                   );
-                }).toList(),
+                }),
               ],
             );
           },
@@ -904,9 +909,13 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
       return 'Hoje';
-    } else if (date.year == now.year && date.month == now.month && date.day == now.day - 1) {
+    } else if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day - 1) {
       return 'Ontem';
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
@@ -915,17 +924,19 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   Widget _buildSimpleMessageBubble(
       Message message, User currentUser, bool isFromCurrentUser) {
-    final bubbleColor = isFromCurrentUser ? DesignTokens.primary500 : Colors.green[100];
-    final textColor = isFromCurrentUser ? Colors.white : DesignTokens.neutral900;
+    final bubbleColor =
+        isFromCurrentUser ? DesignTokens.primary500 : Colors.green[100];
+    final textColor =
+        isFromCurrentUser ? Colors.white : DesignTokens.neutral900;
     final roleLabel = isFromCurrentUser ? 'Atendente' : 'Cliente';
     final borderRadius = isFromCurrentUser
-        ? BorderRadius.only(
+        ? const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(4),
             bottomLeft: Radius.circular(16),
             bottomRight: Radius.circular(16),
           )
-        : BorderRadius.only(
+        : const BorderRadius.only(
             topLeft: Radius.circular(4),
             topRight: Radius.circular(16),
             bottomLeft: Radius.circular(16),
@@ -1018,7 +1029,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               ),
             ],
           ),
-          child: Column(
+          child: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
@@ -1030,7 +1041,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                       AlwaysStoppedAnimation<Color>(DesignTokens.primary500),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 'Carregando mensagens...',
                 style: TextStyle(
@@ -1040,114 +1051,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showMessageOptions(Message message) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: DesignTokens.neutral300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: DesignTokens.primary500.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  PhosphorIcons.copy(),
-                  color: DesignTokens.primary500,
-                  size: 20,
-                ),
-              ),
-              title: Text(
-                'Copiar mensagem',
-                style: TextStyle(
-                  color: DesignTokens.neutral900,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: message.content));
-                Navigator.pop(context);
-                ToastService.instance.showSuccess(
-                  context,
-                  message: 'Mensagem copiada para a área de transferência',
-                  title: 'Copiado!',
-                );
-              },
-            ),
-            if (message.sender.id == 'current_user')
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: DesignTokens.error500.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    PhosphorIcons.trash(),
-                    color: DesignTokens.error500,
-                    size: 20,
-                  ),
-                ),
-                title: Text(
-                  'Excluir mensagem',
-                  style: TextStyle(
-                    color: DesignTokens.error500,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteMessage(message);
-                },
-              ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 48, 71, 108).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  PhosphorIcons.arrowBendUpLeft(),
-                  color: DesignTokens.primary500,
-                  size: 20,
-                ),
-              ),
-              title: Text(
-                'Responder',
-                style: TextStyle(
-                  color: DesignTokens.neutral900,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _replyToMessage(message);
-              },
-            ),
-          ],
         ),
       ),
     );
@@ -1220,7 +1123,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [Colors.white, DesignTokens.neutral50],
@@ -1233,7 +1136,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
             spreadRadius: 0,
           ),
         ],
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         child: Container(
@@ -1319,7 +1222,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           Text(
             participant.name,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: DesignTokens.neutral900,
@@ -1328,7 +1231,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           const SizedBox(height: 4),
           Text(
             participant.email,
-            style: TextStyle(
+            style: const TextStyle(
               color: DesignTokens.neutral600,
             ),
           ),
@@ -1383,7 +1286,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: DesignTokens.neutral600,
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1396,10 +1299,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   void _createTicket() {
     Navigator.pop(context);
-    ToastService.instance.showInfo(
+    ToastMessage.show(
       context,
       message: 'Funcionalidade de criação de ticket será implementada em breve',
-      title: 'Em desenvolvimento',
+      type: ToastType.info,
     );
   }
 
@@ -1427,10 +1330,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ToastService.instance.showSuccess(
+              ToastMessage.show(
                 context,
                 message: 'Conversa arquivada com sucesso',
-                title: 'Arquivado!',
+                type: ToastType.success,
               );
             },
             child: const Text('Arquivar'),
@@ -1468,10 +1371,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               setState(() {
                 _messages.clear();
               });
-              ToastService.instance.showSuccess(
+              ToastMessage.show(
                 context,
                 message: 'Conversa limpa com sucesso',
-                title: 'Limpo!',
+                type: ToastType.success,
               );
             },
             style: ElevatedButton.styleFrom(
@@ -1527,17 +1430,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     _sendMessage(suggestion, MessageType.text);
   }
 
-  void _replyToMessage(Message message) {
-    setState(() {
-      _replyingTo = message;
-    });
-  }
-
   void _editMessage(Message message) {
-    ToastService.instance.showInfo(
+    ToastMessage.show(
       context,
       message: 'Funcionalidade de edição será implementada em breve',
-      title: 'Em desenvolvimento',
+      type: ToastType.info,
     );
   }
 
@@ -1568,10 +1465,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               setState(() {
                 _messages.removeWhere((m) => m.id == message.id);
               });
-              ToastService.instance.showSuccess(
+              ToastMessage.show(
                 context,
                 message: 'Mensagem excluída com sucesso',
-                title: 'Excluído!',
+                type: ToastType.success,
               );
             },
             style: ElevatedButton.styleFrom(
@@ -1681,18 +1578,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         _searchFocusNode.requestFocus();
       }
     });
-  }
-
-  void _jumpToMessage(Message message) {
-    final index = _messages.indexOf(message);
-    if (index != -1) {
-      _scrollController.animateTo(
-        index * 80.0, // Approximate message height
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-      _toggleSearchMode();
-    }
   }
 
   @override

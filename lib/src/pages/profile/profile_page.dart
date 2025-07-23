@@ -6,11 +6,9 @@ import '../../components/ui/user_avatar.dart';
 import '../../components/theme/theme_switcher.dart';
 import '../../stores/theme_store.dart';
 import '../../styles/app_theme.dart';
-import '../../styles/app_constants.dart';
-import '../../utils/color_extensions.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -21,7 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _notificationsEnabled = true;
   bool _soundEnabled = true;
   bool _darkMode = false;
-  String _selectedLanguage = 'pt';
+  final String _selectedLanguage = 'pt';
 
   @override
   void initState() {
@@ -37,8 +35,9 @@ class _ProfilePageState extends State<ProfilePage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth >= 1200;
-            final isTablet = constraints.maxWidth >= 768 && constraints.maxWidth < 1200;
-            
+            final isTablet =
+                constraints.maxWidth >= 768 && constraints.maxWidth < 1200;
+
             if (isDesktop) {
               return _buildDesktopLayout();
             } else if (isTablet) {
@@ -177,11 +176,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: const Color(0x4D3B82F6),
+            color: Color(0x4D3B82F6),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -355,7 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
               vertical: AppTheme.spacing8,
             ),
             decoration: BoxDecoration(
-              color: _getRoleColor(_currentUser.role).withValues(alpha:  0.1),
+              color: _getRoleColor(_currentUser.role).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -734,7 +733,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(AppTheme.spacing16),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha:  0.1),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -806,7 +805,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: AppTheme.spacing24),
-          
+
           // Title
           Row(
             children: [
@@ -819,9 +818,9 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 'Configurações de Aparência',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.getTextColor(context),
-                ),
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextColor(context),
+                    ),
               ),
             ],
           ),
@@ -829,19 +828,19 @@ class _ProfilePageState extends State<ProfilePage> {
           Text(
             'Personalize a aparência do aplicativo',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
-            ),
+                  color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
+                ),
           ),
           const SizedBox(height: AppTheme.spacing32),
-          
+
           // Theme Switcher
           const ThemeSwitcher(
             showLabel: true,
             isCompact: false,
           ),
-          
+
           const SizedBox(height: AppTheme.spacing24),
-          
+
           // Current theme info
           Consumer<ThemeStore>(
             builder: (context, themeStore, child) {
@@ -852,7 +851,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: AppTheme.getTextColor(context).withValues(alpha: 0.6),
+                      color:
+                          AppTheme.getTextColor(context).withValues(alpha: 0.6),
                       size: 20,
                     ),
                     const SizedBox(width: AppTheme.spacing12),
@@ -862,17 +862,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           Text(
                             'Tema Atual: ${themeStore.currentThemeName}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.getTextColor(context),
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.getTextColor(context),
+                                ),
                           ),
                           if (themeStore.themeMode == ThemeMode.system)
                             Text(
                               'Seguindo configuração do sistema',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppTheme.getTextColor(context)
+                                        .withValues(alpha: 0.7),
+                                  ),
                             ),
                         ],
                       ),
@@ -882,7 +889,7 @@ class _ProfilePageState extends State<ProfilePage> {
               );
             },
           ),
-          
+
           const SizedBox(height: AppTheme.spacing32),
         ],
       ),
@@ -1033,8 +1040,8 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 8),
           Text(
             _currentUser.email,
-            style: TextStyle(
-              color: const Color(0xFF6B7280),
+            style: const TextStyle(
+              color: Color(0xFF6B7280),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -1067,9 +1074,12 @@ class _ProfilePageState extends State<ProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildEnhancedStatItem('Tickets', '24', PhosphorIcons.ticket(), const Color(0xFF3B82F6)),
-              _buildEnhancedStatItem('Chats', '12', PhosphorIcons.chatCircle(), const Color(0xFF10B981)),
-              _buildEnhancedStatItem('Resolvidos', '18', PhosphorIcons.checkCircle(), const Color(0xFFF59E0B)),
+              _buildEnhancedStatItem('Tickets', '24', PhosphorIcons.ticket(),
+                  const Color(0xFF3B82F6)),
+              _buildEnhancedStatItem('Chats', '12', PhosphorIcons.chatCircle(),
+                  const Color(0xFF10B981)),
+              _buildEnhancedStatItem('Resolvidos', '18',
+                  PhosphorIcons.checkCircle(), const Color(0xFFF59E0B)),
             ],
           ),
         ],
@@ -1077,14 +1087,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildEnhancedStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildEnhancedStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
+              colors: [
+                color.withValues(alpha: 0.1),
+                color.withValues(alpha: 0.05)
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: color.withValues(alpha: 0.2)),
@@ -1356,7 +1370,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color, String trend) {
+  Widget _buildMetricCard(
+      String title, String value, IconData icon, Color color, String trend) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1503,14 +1518,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildQuickActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildQuickActionButton(
+      String label, IconData icon, Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
+            colors: [
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05)
+            ],
           ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withValues(alpha: 0.2)),
@@ -1583,7 +1602,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 24),
-          _buildStatusItem('Servidor Principal', 'Online', const Color(0xFF10B981)),
+          _buildStatusItem(
+              'Servidor Principal', 'Online', const Color(0xFF10B981)),
           const SizedBox(height: 12),
           _buildStatusItem('Base de Dados', 'Online', const Color(0xFF10B981)),
           const SizedBox(height: 12),
@@ -1703,7 +1723,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildQuickStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildQuickStatItem(
+      String label, String value, IconData icon, Color color) {
     return Row(
       children: [
         Container(
@@ -1766,9 +1787,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Text(
             'Atividade Recente',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1F2937),
-            ),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1F2937),
+                ),
           ),
           const SizedBox(height: AppTheme.spacing16),
           _buildActivityItem(
@@ -1796,7 +1817,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildActivityItem(String title, String time, IconData icon, Color color) {
+  Widget _buildActivityItem(
+      String title, String time, IconData icon, Color color) {
     return Row(
       children: [
         Container(
@@ -1865,7 +1887,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 // Página de edição de perfil
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({Key? key}) : super(key: key);
+  const EditProfilePage({super.key});
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -1885,7 +1907,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        shadowColor: Colors.black.withValues(alpha:  0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Icon(
@@ -1927,7 +1949,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha:  0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),

@@ -1,11 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'platform_network_mobile.dart' if (dart.library.html) 'platform_network_web.dart' as platform_network;
+import 'platform_network_mobile.dart'
+    if (dart.library.html) 'platform_network_web.dart' as platform_network;
 
-import 'network_config_mobile.dart' if (dart.library.html) 'empty.dart' as platform_config;
+import 'network_config_mobile.dart' if (dart.library.html) 'empty.dart'
+    as platform_config;
 
 // Handled in platform files
 
@@ -22,7 +22,8 @@ class NetworkConfig {
     await NetworkTester.instance.testSupabaseDns();
 
     if (networkTester._getCachedIp(domain) == null) {
-      print('⚠️ Não foi possível resolver o DNS do Supabase, tentando alternativa...');
+      print(
+          '⚠️ Não foi possível resolver o DNS do Supabase, tentando alternativa...');
       await networkTester._resolveDns('google.com');
       await networkTester._resolveDns(domain);
 
@@ -74,22 +75,22 @@ class NetworkTester {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Problema de Conectividade Detectado'),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: ListBody(
               children: [
-                const Text(
+                Text(
                   'O aplicativo está tendo dificuldades para se conectar ao servidor Supabase.',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
-                const Text('Possíveis soluções:'),
-                const SizedBox(height: 8),
-                const Text('• Verifique sua conexão com a internet'),
-                const Text('• Tente trocar para uma rede Wi-Fi diferente'),
-                const Text('• Configure um DNS público (8.8.8.8 ou 1.1.1.1)'),
-                const Text('• Desative temporariamente VPN ou proxy'),
-                const SizedBox(height: 16),
-                const Text(
+                SizedBox(height: 16),
+                Text('Possíveis soluções:'),
+                SizedBox(height: 8),
+                Text('• Verifique sua conexão com a internet'),
+                Text('• Tente trocar para uma rede Wi-Fi diferente'),
+                Text('• Configure um DNS público (8.8.8.8 ou 1.1.1.1)'),
+                Text('• Desative temporariamente VPN ou proxy'),
+                SizedBox(height: 16),
+                Text(
                   'Para mais detalhes, consulte o arquivo ANDROID_DNS_FIX_GUIDE.md',
                   style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
                 ),
@@ -139,7 +140,7 @@ class NetworkTester {
   }
 
   /// Resolve um domínio para seu IP
-  
+
   /// Obtém o IP em cache para um domínio
   String? _getCachedIp(String domain) {
     return _dnsCache[domain];

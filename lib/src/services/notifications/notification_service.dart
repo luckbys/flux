@@ -135,7 +135,7 @@ class NotificationService {
   // Settings
   bool _notificationsEnabled = true;
   bool _soundEnabled = true;
-  Map<NotificationType, bool> _typeSettings = {
+  final Map<NotificationType, bool> _typeSettings = {
     for (var type in NotificationType.values) type: true
   };
 

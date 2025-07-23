@@ -4,7 +4,6 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../../styles/app_theme.dart';
 import '../../styles/app_constants.dart';
 import '../../models/message.dart';
-import '../../utils/color_extensions.dart';
 
 class ChatInput extends StatefulWidget {
   final Function(String, MessageType) onSendMessage;
@@ -127,17 +126,19 @@ class _ChatInputState extends State<ChatInput> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 768;
-    
+
     return Container(
       padding: EdgeInsets.all(isDesktop ? 20 : AppTheme.spacing16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: isDesktop ? null : Border(
-          top: BorderSide(
-            color: AppTheme.textColor.withValues(alpha:  0.1),
-            width: 1,
-          ),
-        ),
+        border: isDesktop
+            ? null
+            : Border(
+                top: BorderSide(
+                  color: AppTheme.textColor.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
       ),
       child: Column(
         children: [
@@ -163,7 +164,7 @@ class _ChatInputState extends State<ChatInput> {
                   PhosphorIcons.paperclip(),
                   color: widget.enabled
                       ? AppTheme.primaryColor
-                      : AppTheme.textColor.withValues(alpha:  0.5),
+                      : AppTheme.textColor.withValues(alpha: 0.5),
                   size: isDesktop ? 24 : 20,
                 ),
                 padding: EdgeInsets.all(isDesktop ? 12 : AppTheme.spacing8),
@@ -177,9 +178,13 @@ class _ChatInputState extends State<ChatInput> {
               IconButton(
                 onPressed: widget.enabled ? _toggleEmojiPicker : null,
                 icon: Icon(
-                  _showEmojiPicker ? PhosphorIcons.keyboard() : PhosphorIcons.smiley(),
+                  _showEmojiPicker
+                      ? PhosphorIcons.keyboard()
+                      : PhosphorIcons.smiley(),
                   color: widget.enabled
-                      ? (_showEmojiPicker ? AppTheme.primaryColor : AppTheme.textColor.withValues(alpha: 0.7))
+                      ? (_showEmojiPicker
+                          ? AppTheme.primaryColor
+                          : AppTheme.textColor.withValues(alpha: 0.7))
                       : AppTheme.textColor.withValues(alpha: 0.5),
                   size: isDesktop ? 24 : 20,
                 ),
@@ -195,10 +200,10 @@ class _ChatInputState extends State<ChatInput> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppTheme.backgroundColor,
-                    borderRadius:
-                        BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+                    borderRadius: BorderRadius.circular(
+                        isDesktop ? 12 : AppConstants.radiusLarge),
                     border: Border.all(
-                      color: AppTheme.textColor.withValues(alpha:  0.1),
+                      color: AppTheme.textColor.withValues(alpha: 0.1),
                     ),
                   ),
                   child: TextField(
@@ -240,34 +245,34 @@ class _ChatInputState extends State<ChatInput> {
 
           // Emoji picker
           if (_showEmojiPicker)
-            Container(
+            SizedBox(
               height: 250,
               child: EmojiPicker(
-                 onEmojiSelected: (category, emoji) {
-                   _onEmojiSelected(emoji);
-                 },
-                 config: Config(
-                    height: 250,
-                    checkPlatformCompatibility: true,
-                    emojiViewConfig: EmojiViewConfig(
-                      emojiSizeMax: isDesktop ? 32 : 28,
-                      backgroundColor: AppTheme.backgroundColor,
-                      recentsLimit: 28,
-                    ),
-                    skinToneConfig: const SkinToneConfig(),
-                    categoryViewConfig: CategoryViewConfig(
-                      backgroundColor: AppTheme.backgroundColor,
-                      iconColorSelected: AppTheme.primaryColor,
-                      categoryIcons: const CategoryIcons(),
-                    ),
-                    bottomActionBarConfig: BottomActionBarConfig(
-                      backgroundColor: AppTheme.backgroundColor,
-                    ),
-                    searchViewConfig: SearchViewConfig(
-                      backgroundColor: AppTheme.backgroundColor,
-                    ),
+                onEmojiSelected: (category, emoji) {
+                  _onEmojiSelected(emoji);
+                },
+                config: Config(
+                  height: 250,
+                  checkPlatformCompatibility: true,
+                  emojiViewConfig: EmojiViewConfig(
+                    emojiSizeMax: isDesktop ? 32 : 28,
+                    backgroundColor: AppTheme.backgroundColor,
+                    recentsLimit: 28,
                   ),
-               ),
+                  skinToneConfig: const SkinToneConfig(),
+                  categoryViewConfig: const CategoryViewConfig(
+                    backgroundColor: AppTheme.backgroundColor,
+                    iconColorSelected: AppTheme.primaryColor,
+                    categoryIcons: CategoryIcons(),
+                  ),
+                  bottomActionBarConfig: const BottomActionBarConfig(
+                    backgroundColor: AppTheme.backgroundColor,
+                  ),
+                  searchViewConfig: const SearchViewConfig(
+                    backgroundColor: AppTheme.backgroundColor,
+                  ),
+                ),
+              ),
             ),
         ],
       ),
@@ -275,7 +280,7 @@ class _ChatInputState extends State<ChatInput> {
   }
 
   Widget _buildQuickReplies() {
-    return Container(
+    return SizedBox(
       height: 36,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -285,7 +290,7 @@ class _ChatInputState extends State<ChatInput> {
         itemBuilder: (context, index) {
           final reply = widget.quickReplies[index];
           return Material(
-            color: AppTheme.primaryColor.withValues(alpha:  0.1),
+            color: AppTheme.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
             child: InkWell(
               onTap: () => _sendQuickReply(reply),
@@ -328,13 +333,13 @@ class _ChatInputState extends State<ChatInput> {
         vertical: AppTheme.spacing8,
       ),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha:  0.05),
+        color: AppTheme.primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 16,
             height: 16,
             child: CircularProgressIndicator(
@@ -358,27 +363,32 @@ class _ChatInputState extends State<ChatInput> {
     final isDesktop = MediaQuery.of(context).size.width > 768;
     final buttonSize = isDesktop ? 48.0 : AppConstants.buttonHeight;
     final iconSize = isDesktop ? 24.0 : AppConstants.iconMedium;
-    
+
     return Container(
       width: buttonSize,
       height: buttonSize,
       decoration: BoxDecoration(
         color: AppTheme.primaryColor,
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
-        boxShadow: isDesktop ? [
-          BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : null,
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        boxShadow: isDesktop
+            ? [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
         child: InkWell(
           onTap: _sendMessage,
-          borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+          borderRadius:
+              BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
           child: Icon(
             PhosphorIcons.paperPlaneTilt(),
             color: Colors.white,
@@ -393,24 +403,29 @@ class _ChatInputState extends State<ChatInput> {
     final isDesktop = MediaQuery.of(context).size.width > 768;
     final buttonSize = isDesktop ? 48.0 : AppConstants.buttonHeight;
     final iconSize = isDesktop ? 24.0 : AppConstants.iconMedium;
-    
+
     return Container(
       width: buttonSize,
       height: buttonSize,
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha:  0.1),
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
-        border: isDesktop ? Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.2),
-          width: 1,
-        ) : null,
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        border: isDesktop
+            ? Border.all(
+                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                width: 1,
+              )
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
         child: InkWell(
           onTap: widget.onStartVoiceRecording,
-          borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+          borderRadius:
+              BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
           child: Icon(
             PhosphorIcons.microphone(),
             color: AppTheme.primaryColor,
@@ -425,32 +440,37 @@ class _ChatInputState extends State<ChatInput> {
     final isDesktop = MediaQuery.of(context).size.width > 768;
     final buttonSize = isDesktop ? 48.0 : AppConstants.buttonHeight;
     final iconSize = isDesktop ? 24.0 : AppConstants.iconMedium;
-    
+
     return Container(
       width: buttonSize,
       height: buttonSize,
       decoration: BoxDecoration(
         color: AppTheme.errorColor,
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
-        boxShadow: isDesktop ? [
-          BoxShadow(
-            color: AppTheme.errorColor.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : null,
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        boxShadow: isDesktop
+            ? [
+                BoxShadow(
+                  color: AppTheme.errorColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+        borderRadius:
+            BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
         child: InkWell(
           onTap: widget.onStopVoiceRecording,
-          borderRadius: BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
+          borderRadius:
+              BorderRadius.circular(isDesktop ? 12 : AppConstants.radiusLarge),
           child: Icon(
-              PhosphorIcons.stop(),
-              color: Colors.white,
-              size: iconSize,
-            ),
+            PhosphorIcons.stop(),
+            color: Colors.white,
+            size: iconSize,
+          ),
         ),
       ),
     );

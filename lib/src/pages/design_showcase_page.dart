@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../styles/design_tokens.dart';
-import '../styles/enhanced_theme.dart';
 import '../styles/micro_animations.dart';
 import '../styles/accessible_components.dart';
 
@@ -113,10 +112,10 @@ class _DesignShowcasePageState extends State<DesignShowcasePage>
         onPressed: () {
           _showDesignSystemInfo();
         },
-        child: FloatingActionButton.extended(
+        child: const FloatingActionButton.extended(
           onPressed: null, // Controlado pelo wrapper
-          icon: const Icon(Icons.help_outline),
-          label: const Text('Ajuda'),
+          icon: Icon(Icons.help_outline),
+          label: Text('Ajuda'),
         ),
       ),
     );

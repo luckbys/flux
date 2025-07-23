@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../stores/quote_store.dart';
 import '../models/quote.dart';
 import '../styles/app_theme.dart';
-import '../utils/color_extensions.dart';
 
 import '../components/error_message.dart';
 import 'quote_form_page.dart';
@@ -28,6 +27,14 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<QuoteStore>().loadQuotes();
     });
+  }
+
+  String _getFriendlyQuoteNumber(String id) {
+    // Pega os últimos 6 caracteres do ID e converte para um número mais amigável
+    final lastChars =
+        id.replaceAll('-', '').substring(id.replaceAll('-', '').length - 6);
+    final numericValue = int.tryParse(lastChars, radix: 16) ?? 0;
+    return (numericValue % 999999 + 100000).toString();
   }
 
   @override
@@ -62,7 +69,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
 
           final screenWidth = MediaQuery.of(context).size.width;
           final isDesktop = screenWidth > 1200;
-          return isDesktop ? _buildDesktopLayout(quote) : _buildMobileLayout(quote);
+          return isDesktop
+              ? _buildDesktopLayout(quote)
+              : _buildMobileLayout(quote);
         },
       ),
     );
@@ -164,9 +173,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           Text(
             'Total: R\$ ${quote.total.toStringAsFixed(2)}',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: AppTheme.primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           ElevatedButton.icon(
             onPressed: () => _shareQuote(quote),
@@ -221,11 +230,14 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Orçamento #${quote.id}',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            'Orçamento #${_getFriendlyQuoteNumber(quote.id)}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(height: 8),
                           _buildStatusChip(quote.status),
@@ -241,10 +253,28 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                     if (isWide) {
                       return Row(
                         children: [
-                          Expanded(child: _buildInfoItem('ID do Orçamento', '#${quote.id}', Icons.tag)),
-                          Expanded(child: _buildInfoItem('Data de Criação', _formatDate(quote.createdAt), Icons.calendar_today)),
-                          Expanded(child: _buildInfoItem('Válido até', quote.validUntil != null ? _formatDate(quote.validUntil!) : 'Não definido', Icons.schedule)),
-                          Expanded(child: _buildInfoItem('Prioridade', _getPriorityLabel(quote.priority), _getPriorityIcon(quote.priority))),
+                          Expanded(
+                              child: _buildInfoItem(
+                                  'Número do Orçamento',
+                                  '#${_getFriendlyQuoteNumber(quote.id)}',
+                                  Icons.tag)),
+                          Expanded(
+                              child: _buildInfoItem(
+                                  'Data de Criação',
+                                  _formatDate(quote.createdAt),
+                                  Icons.calendar_today)),
+                          Expanded(
+                              child: _buildInfoItem(
+                                  'Válido até',
+                                  quote.validUntil != null
+                                      ? _formatDate(quote.validUntil!)
+                                      : 'Não definido',
+                                  Icons.schedule)),
+                          Expanded(
+                              child: _buildInfoItem(
+                                  'Prioridade',
+                                  _getPriorityLabel(quote.priority),
+                                  _getPriorityIcon(quote.priority))),
                         ],
                       );
                     } else {
@@ -252,15 +282,33 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                         children: [
                           Row(
                             children: [
-                              Expanded(child: _buildInfoItem('ID do Orçamento', '#${quote.id}', Icons.tag)),
-                              Expanded(child: _buildInfoItem('Data de Criação', _formatDate(quote.createdAt), Icons.calendar_today)),
+                              Expanded(
+                                  child: _buildInfoItem(
+                                      'Número do Orçamento',
+                                      '#${_getFriendlyQuoteNumber(quote.id)}',
+                                      Icons.tag)),
+                              Expanded(
+                                  child: _buildInfoItem(
+                                      'Data de Criação',
+                                      _formatDate(quote.createdAt),
+                                      Icons.calendar_today)),
                             ],
                           ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              Expanded(child: _buildInfoItem('Válido até', quote.validUntil != null ? _formatDate(quote.validUntil!) : 'Não definido', Icons.schedule)),
-                              Expanded(child: _buildInfoItem('Prioridade', _getPriorityLabel(quote.priority), _getPriorityIcon(quote.priority))),
+                              Expanded(
+                                  child: _buildInfoItem(
+                                      'Válido até',
+                                      quote.validUntil != null
+                                          ? _formatDate(quote.validUntil!)
+                                          : 'Não definido',
+                                      Icons.schedule)),
+                              Expanded(
+                                  child: _buildInfoItem(
+                                      'Prioridade',
+                                      _getPriorityLabel(quote.priority),
+                                      _getPriorityIcon(quote.priority))),
                             ],
                           ),
                         ],
@@ -314,19 +362,24 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         'Informações do Cliente',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildEnhancedInfoRow('Nome', quote.customer.name, Icons.person_outline_rounded),
+                _buildEnhancedInfoRow(
+                    'Nome', quote.customer.name, Icons.person_outline_rounded),
                 const SizedBox(height: 16),
-                _buildEnhancedInfoRow('Email', quote.customer.email, Icons.email_outlined),
+                _buildEnhancedInfoRow(
+                    'Email', quote.customer.email, Icons.email_outlined),
                 const SizedBox(height: 16),
-                _buildEnhancedInfoRow('Telefone', quote.customer.phone ?? 'Não informado', Icons.phone_outlined),
+                _buildEnhancedInfoRow(
+                    'Telefone',
+                    quote.customer.phone ?? 'Não informado',
+                    Icons.phone_outlined),
               ],
             ),
           ),
@@ -365,17 +418,17 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColor.withOpacity(0.7),
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: AppTheme.textColor.withOpacity(0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+                        color: AppTheme.textColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
@@ -395,10 +448,10 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -423,13 +476,14 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         'Itens do Orçamento',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -437,9 +491,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         '${quote.items.length} ${quote.items.length == 1 ? 'item' : 'itens'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ),
                   ],
@@ -464,16 +518,16 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+          ),
           child: Column(
             children: quote.items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
               final isLast = index == quote.items.length - 1;
-              
+
               return Column(
                 children: [
                   _buildEnhancedItemRow(item, index + 1),
@@ -511,9 +565,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                   child: Text(
                     '$itemNumber',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
               ),
@@ -525,17 +579,17 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                     Text(
                       item.description,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.textColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            color: AppTheme.textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     if (item.description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         item.description!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textColor.withOpacity(0.7),
-                        ),
+                              color: AppTheme.textColor.withOpacity(0.7),
+                            ),
                       ),
                     ],
                   ],
@@ -596,17 +650,17 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textColor.withOpacity(0.7),
-            fontWeight: FontWeight.w500,
-          ),
+                color: AppTheme.textColor.withOpacity(0.7),
+                fontWeight: FontWeight.w500,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textColor,
-            fontWeight: FontWeight.bold,
-          ),
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.bold,
+              ),
         ),
       ],
     );
@@ -650,22 +704,26 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         'Resumo do Orçamento',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildEnhancedTotalRow('Subtotal', quote.subtotal, Icons.receipt_long_rounded, false),
+                _buildEnhancedTotalRow('Subtotal', quote.subtotal,
+                    Icons.receipt_long_rounded, false),
                 const SizedBox(height: 12),
                 if (quote.additionalDiscount > 0) ...[
-                  _buildEnhancedTotalRow('Desconto', quote.additionalDiscount, Icons.discount_rounded, false, isNegative: true),
+                  _buildEnhancedTotalRow('Desconto', quote.additionalDiscount,
+                      Icons.discount_rounded, false,
+                      isNegative: true),
                   const SizedBox(height: 12),
                 ],
                 if (quote.taxRate > 0) ...[
-                  _buildEnhancedTotalRow('Impostos (${quote.taxRate}%)', quote.taxAmount, Icons.account_balance_rounded, false),
+                  _buildEnhancedTotalRow('Impostos (${quote.taxRate}%)',
+                      quote.taxAmount, Icons.account_balance_rounded, false),
                   const SizedBox(height: 12),
                 ],
                 const SizedBox(height: 8),
@@ -674,7 +732,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                   color: AppTheme.primaryColor.withOpacity(0.3),
                 ),
                 const SizedBox(height: 16),
-                _buildEnhancedTotalRow('Total', quote.total, Icons.payments_rounded, true),
+                _buildEnhancedTotalRow(
+                    'Total', quote.total, Icons.payments_rounded, true),
               ],
             ),
           ),
@@ -691,14 +750,20 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
         children: [
           Text(
             label,
-            style: (isTotal ? Theme.of(context).textTheme.headlineSmall : Theme.of(context).textTheme.bodyMedium)?.copyWith(
+            style: (isTotal
+                    ? Theme.of(context).textTheme.headlineSmall
+                    : Theme.of(context).textTheme.bodyMedium)
+                ?.copyWith(
               color: AppTheme.textColor,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
             'R\$ ${amount.toStringAsFixed(2)}',
-            style: (isTotal ? Theme.of(context).textTheme.headlineSmall : Theme.of(context).textTheme.bodyMedium)?.copyWith(
+            style: (isTotal
+                    ? Theme.of(context).textTheme.headlineSmall
+                    : Theme.of(context).textTheme.bodyMedium)
+                ?.copyWith(
               color: isTotal ? AppTheme.primaryColor : AppTheme.textColor,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
@@ -708,22 +773,25 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
     );
   }
 
-  Widget _buildEnhancedTotalRow(String label, double value, IconData icon, bool isTotal, {bool isNegative = false}) {
-    final color = isTotal 
-        ? AppTheme.primaryColor 
-        : isNegative 
-            ? Colors.red.shade600 
+  Widget _buildEnhancedTotalRow(
+      String label, double value, IconData icon, bool isTotal,
+      {bool isNegative = false}) {
+    final color = isTotal
+        ? AppTheme.primaryColor
+        : isNegative
+            ? Colors.red.shade600
             : AppTheme.textColor;
-    
+
     return Container(
       padding: EdgeInsets.all(isTotal ? 16 : 12),
       decoration: BoxDecoration(
-        color: isTotal 
-            ? AppTheme.primaryColor.withOpacity(0.1) 
+        color: isTotal
+            ? AppTheme.primaryColor.withOpacity(0.1)
             : AppTheme.backgroundColor.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
-        border: isTotal 
-            ? Border.all(color: AppTheme.primaryColor.withOpacity(0.3), width: 1.5)
+        border: isTotal
+            ? Border.all(
+                color: AppTheme.primaryColor.withOpacity(0.3), width: 1.5)
             : Border.all(color: AppTheme.borderColor.withOpacity(0.2)),
       ),
       child: Row(
@@ -745,19 +813,19 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: color,
-                fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-                fontSize: isTotal ? 16 : 14,
-              ),
+                    color: color,
+                    fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
+                    fontSize: isTotal ? 16 : 14,
+                  ),
             ),
           ),
           Text(
             '${isNegative ? '-' : ''}R\$ ${value.toStringAsFixed(2)}',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: isTotal ? 18 : 16,
-            ),
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isTotal ? 18 : 16,
+                ),
           ),
         ],
       ),
@@ -778,10 +846,10 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -806,9 +874,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         'Informações Adicionais',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ],
@@ -859,9 +927,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textColor,
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: AppTheme.textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ],
           ),
@@ -869,9 +937,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           Text(
             content,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textColor.withOpacity(0.8),
-              height: 1.5,
-            ),
+                  color: AppTheme.textColor.withOpacity(0.8),
+                  height: 1.5,
+                ),
           ),
         ],
       ),
@@ -881,7 +949,7 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
   Widget _buildActionButtons(Quote quote) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
-    
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       child: Card(
@@ -891,10 +959,10 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -919,9 +987,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                       child: Text(
                         'Ações Disponíveis',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ],
@@ -951,7 +1019,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                             label: const Text('Editar'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primaryColor,
-                              side: const BorderSide(color: AppTheme.primaryColor),
+                              side: const BorderSide(
+                                  color: AppTheme.primaryColor),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
                           ),
@@ -983,7 +1052,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                             label: const Text('Rejeitar'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.errorColor,
-                              side: const BorderSide(color: AppTheme.errorColor),
+                              side:
+                                  const BorderSide(color: AppTheme.errorColor),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
                           ),
@@ -1014,7 +1084,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                           label: const Text('Duplicar'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.primaryColor,
-                            side: const BorderSide(color: AppTheme.primaryColor),
+                            side:
+                                const BorderSide(color: AppTheme.primaryColor),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                         ),
@@ -1027,7 +1098,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                           label: const Text('Imprimir'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.primaryColor,
-                            side: const BorderSide(color: AppTheme.primaryColor),
+                            side:
+                                const BorderSide(color: AppTheme.primaryColor),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
                         ),
@@ -1133,16 +1205,14 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             decoration: BoxDecoration(
-              color: isPrimary 
-                  ? color 
-                  : isOutlined 
-                      ? Colors.transparent 
+              color: isPrimary
+                  ? color
+                  : isOutlined
+                      ? Colors.transparent
                       : color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: isOutlined 
-                  ? Border.all(color: color, width: 1.5) 
-                  : null,
-              boxShadow: isPrimary 
+              border: isOutlined ? Border.all(color: color, width: 1.5) : null,
+              boxShadow: isPrimary
                   ? [
                       BoxShadow(
                         color: color.withOpacity(0.3),
@@ -1158,19 +1228,15 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                 Icon(
                   icon,
                   size: 18,
-                  color: isPrimary 
-                      ? Colors.white 
-                      : color,
+                  color: isPrimary ? Colors.white : color,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isPrimary 
-                        ? Colors.white 
-                        : color,
-                    fontWeight: FontWeight.w600,
-                  ),
+                        color: isPrimary ? Colors.white : color,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
@@ -1205,17 +1271,18 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
                     Text(
                       'Total do Orçamento',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textColor.withOpacity(0.7),
-                        fontWeight: FontWeight.w500,
-                      ),
+                            color: AppTheme.textColor.withOpacity(0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'R\$ ${quote.total.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                   ],
                 ),
@@ -1250,8 +1317,8 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white.withOpacity(0.8),
-              ),
+                    color: Colors.white.withOpacity(0.8),
+                  ),
             ),
           ],
         ),
@@ -1259,9 +1326,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
@@ -1270,7 +1337,7 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
   Widget _buildStatusChip(QuoteStatus status) {
     Color color;
     String label;
-    
+
     switch (status) {
       case QuoteStatus.draft:
         color = Colors.grey;
@@ -1311,7 +1378,7 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
             ),
@@ -1320,9 +1387,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ],
       ),
@@ -1378,9 +1445,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
 
   void _approveQuote(Quote quote) {
     context.read<QuoteStore>().updateQuote(
-      quoteId: quote.id,
-      status: QuoteStatus.approved,
-    );
+          quoteId: quote.id,
+          status: QuoteStatus.approved,
+        );
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Orçamento aprovado!')),
     );
@@ -1388,9 +1455,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
 
   void _rejectQuote(Quote quote) {
     context.read<QuoteStore>().updateQuote(
-      quoteId: quote.id,
-      status: QuoteStatus.rejected,
-    );
+          quoteId: quote.id,
+          status: QuoteStatus.rejected,
+        );
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Orçamento rejeitado!')),
     );
@@ -1398,9 +1465,9 @@ class _QuoteDetailPageState extends State<QuoteDetailPage> {
 
   void _convertQuote(Quote quote) {
     context.read<QuoteStore>().updateQuote(
-      quoteId: quote.id,
-      status: QuoteStatus.converted,
-    );
+          quoteId: quote.id,
+          status: QuoteStatus.converted,
+        );
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Orçamento convertido em pedido!')),
     );

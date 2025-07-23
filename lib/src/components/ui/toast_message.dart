@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../styles/app_theme.dart';
+import 'glass_container.dart';
 
 enum ToastType {
   success,
@@ -12,99 +12,49 @@ enum ToastType {
 class ToastMessage extends StatelessWidget {
   final String message;
   final ToastType type;
-  final String? title;
-  final VoidCallback? onAction;
-  final String? actionText;
-  final Duration? duration;
+  final Duration duration;
+  final VoidCallback? onDismiss;
 
   const ToastMessage({
     super.key,
     required this.message,
     this.type = ToastType.info,
-    this.title,
-    this.onAction,
-    this.actionText,
-    this.duration,
+    this.duration = const Duration(seconds: 3),
+    this.onDismiss,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final colors = _getColors(type);
-    final icon = _getIcon(type);
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCardColor : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colors['border']!,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors['shadow']!,
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return GlassContainer(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: colors['background']!,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: colors['icon']!,
-                size: 24,
+            Icon(
+              _getIcon(),
+              color: _getColor(),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: _getColor(),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (title != null) ...[
-                    Text(
-                      title!,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.getTextColor(context),
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-                  Text(
-                    message,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.getTextColor(context)
-                              .withValues(alpha: 0.8),
-                          height: 1.4,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            if (onAction != null) ...[
+            if (onDismiss != null) ...[
               const SizedBox(width: 12),
-              TextButton(
-                onPressed: onAction,
-                child: Text(
-                  actionText ?? 'Ação',
-                  style: TextStyle(
-                    color: colors['icon']!,
-                    fontWeight: FontWeight.w600,
-                  ),
+              GestureDetector(
+                onTap: onDismiss,
+                child: Icon(
+                  Icons.close,
+                  color: _getColor().withOpacity(0.7),
+                  size: 18,
                 ),
               ),
             ],
@@ -114,157 +64,55 @@ class ToastMessage extends StatelessWidget {
     );
   }
 
-  Map<String, Color> _getColors(ToastType type) {
+  IconData _getIcon() {
     switch (type) {
       case ToastType.success:
-        return {
-          'background': AppTheme.successColor.withValues(alpha: 0.1),
-          'icon': AppTheme.successColor,
-          'border': AppTheme.successColor.withValues(alpha: 0.2),
-          'shadow': AppTheme.successColor.withValues(alpha: 0.1),
-        };
+        return Icons.check_circle;
       case ToastType.error:
-        return {
-          'background': AppTheme.errorColor.withValues(alpha: 0.1),
-          'icon': AppTheme.errorColor,
-          'border': AppTheme.errorColor.withValues(alpha: 0.2),
-          'shadow': AppTheme.errorColor.withValues(alpha: 0.1),
-        };
+        return Icons.error;
       case ToastType.warning:
-        return {
-          'background': AppTheme.warningColor.withValues(alpha: 0.1),
-          'icon': AppTheme.warningColor,
-          'border': AppTheme.warningColor.withValues(alpha: 0.2),
-          'shadow': AppTheme.warningColor.withValues(alpha: 0.1),
-        };
+        return Icons.warning;
       case ToastType.info:
-        return {
-          'background': AppTheme.primaryColor.withValues(alpha: 0.1),
-          'icon': AppTheme.primaryColor,
-          'border': AppTheme.primaryColor.withValues(alpha: 0.2),
-          'shadow': AppTheme.primaryColor.withValues(alpha: 0.1),
-        };
+        return Icons.info;
     }
   }
 
-  IconData _getIcon(ToastType type) {
+  Color _getColor() {
     switch (type) {
       case ToastType.success:
-        return PhosphorIcons.checkCircle();
+        return Colors.green;
       case ToastType.error:
-        return PhosphorIcons.xCircle();
+        return Colors.red;
       case ToastType.warning:
-        return PhosphorIcons.warning();
+        return Colors.orange;
       case ToastType.info:
-        return PhosphorIcons.info();
+        return AppTheme.primaryColor;
     }
   }
-}
 
-class ToastService {
-  static final ToastService _instance = ToastService._internal();
-  factory ToastService() => _instance;
-  ToastService._internal();
-
-  static ToastService get instance => _instance;
-
-  void showSuccess(
+  static void show(
     BuildContext context, {
     required String message,
-    String? title,
-    VoidCallback? onAction,
-    String? actionText,
-    Duration? duration,
+    ToastType type = ToastType.info,
+    Duration duration = const Duration(seconds: 3),
   }) {
-    _showToast(
-      context,
-      ToastMessage(
-        message: message,
-        type: ToastType.success,
-        title: title,
-        onAction: onAction,
-        actionText: actionText,
-        duration: duration,
-      ),
-    );
-  }
-
-  void showError(
-    BuildContext context, {
-    required String message,
-    String? title,
-    VoidCallback? onAction,
-    String? actionText,
-    Duration? duration,
-  }) {
-    _showToast(
-      context,
-      ToastMessage(
-        message: message,
-        type: ToastType.error,
-        title: title,
-        onAction: onAction,
-        actionText: actionText,
-        duration: duration,
-      ),
-    );
-  }
-
-  void showWarning(
-    BuildContext context, {
-    required String message,
-    String? title,
-    VoidCallback? onAction,
-    String? actionText,
-    Duration? duration,
-  }) {
-    _showToast(
-      context,
-      ToastMessage(
-        message: message,
-        type: ToastType.warning,
-        title: title,
-        onAction: onAction,
-        actionText: actionText,
-        duration: duration,
-      ),
-    );
-  }
-
-  void showInfo(
-    BuildContext context, {
-    required String message,
-    String? title,
-    VoidCallback? onAction,
-    String? actionText,
-    Duration? duration,
-  }) {
-    _showToast(
-      context,
-      ToastMessage(
-        message: message,
-        type: ToastType.info,
-        title: title,
-        onAction: onAction,
-        actionText: actionText,
-        duration: duration,
-      ),
-    );
-  }
-
-  void _showToast(BuildContext context, ToastMessage toast) {
     final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: MediaQuery.of(context).padding.top + 20,
-        left: 0,
-        right: 0,
+        left: 20,
+        right: 20,
         child: Material(
           color: Colors.transparent,
-          child: AnimatedOpacity(
-            opacity: 1.0,
-            duration: const Duration(milliseconds: 300),
-            child: toast,
+          child: ToastMessage(
+            message: message,
+            type: type,
+            duration: duration,
+            onDismiss: () {
+              overlayEntry.remove();
+            },
           ),
         ),
       ),
@@ -272,8 +120,10 @@ class ToastService {
 
     overlay.insert(overlayEntry);
 
-    Future.delayed(toast.duration ?? const Duration(seconds: 4), () {
-      overlayEntry.remove();
+    Future.delayed(duration, () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
     });
   }
 }

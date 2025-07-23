@@ -8,7 +8,7 @@ import 'accessible_components.dart';
 /// Demonstra tokens de design, modo escuro, acessibilidade e micro-animações
 class DesignSystemExample extends StatefulWidget {
   const DesignSystemExample({super.key});
-  
+
   @override
   State<DesignSystemExample> createState() => _DesignSystemExampleState();
 }
@@ -19,7 +19,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
   bool _checkboxValue = false;
   String _radioValue = 'option1';
   bool _switchValue = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -52,57 +52,57 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
                 title: 'Cores do Sistema',
                 child: _buildColorsSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Tipografia
               _buildSection(
                 title: 'Tipografia',
                 child: _buildTypographySection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Botões
               _buildSection(
                 title: 'Botões Acessíveis',
                 child: _buildButtonsSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Campos de Input
               _buildSection(
                 title: 'Campos de Input',
                 child: _buildInputSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Componentes de Seleção
               _buildSection(
                 title: 'Componentes de Seleção',
                 child: _buildSelectionSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Cards e Animações
               _buildSection(
                 title: 'Cards e Micro-animações',
                 child: _buildCardsSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Espaçamentos
               _buildSection(
                 title: 'Espaçamentos',
                 child: _buildSpacingSection(),
               ),
-              
+
               const SizedBox(height: DesignTokens.space32),
-              
+
               // Seção de Acessibilidade
               _buildSection(
                 title: 'Recursos de Acessibilidade',
@@ -121,15 +121,15 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
               ),
             );
           },
-          child: FloatingActionButton(
+          child: const FloatingActionButton(
             onPressed: null, // Controlado pelo wrapper
-            child: const Icon(Icons.add),
+            child: Icon(Icons.add),
           ),
         ),
       ),
     );
   }
-  
+
   Widget _buildSection({required String title, required Widget child}) {
     return MicroAnimations.enterAnimation(
       child: Column(
@@ -145,7 +145,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ),
     );
   }
-  
+
   Widget _buildColorsSection() {
     return Wrap(
       spacing: DesignTokens.space12,
@@ -160,7 +160,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildColorCard(String name, Color color) {
     return AccessibleComponents.card(
       semanticLabel: 'Cor $name',
@@ -184,14 +184,15 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ),
     );
   }
-  
+
   Widget _buildTypographySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Display Large', style: Theme.of(context).textTheme.displayLarge),
         const SizedBox(height: DesignTokens.space8),
-        Text('Headline Large', style: Theme.of(context).textTheme.headlineLarge),
+        Text('Headline Large',
+            style: Theme.of(context).textTheme.headlineLarge),
         const SizedBox(height: DesignTokens.space8),
         Text('Title Large', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: DesignTokens.space8),
@@ -203,7 +204,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildButtonsSection() {
     return Wrap(
       spacing: DesignTokens.space12,
@@ -242,7 +243,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildInputSection() {
     return Column(
       children: [
@@ -276,7 +277,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildSelectionSection() {
     return Column(
       children: [
@@ -323,7 +324,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildCardsSection() {
     return Column(
       children: [
@@ -399,7 +400,8 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
                     padding: EdgeInsets.all(DesignTokens.space16),
                     child: Column(
                       children: [
-                        Icon(Icons.favorite, size: 32, color: DesignTokens.error500),
+                        Icon(Icons.favorite,
+                            size: 32, color: DesignTokens.error500),
                         SizedBox(height: DesignTokens.space8),
                         Text('Pulse'),
                       ],
@@ -413,13 +415,13 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildSpacingSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Espaçamentos do Design System:', 
-             style: Theme.of(context).textTheme.bodyMedium),
+        Text('Espaçamentos do Design System:',
+            style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: DesignTokens.space12),
         _buildSpacingExample('XS', DesignTokens.space4),
         _buildSpacingExample('SM', DesignTokens.space8),
@@ -430,7 +432,7 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
+
   Widget _buildSpacingExample(String name, double spacing) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: DesignTokens.space4),
@@ -446,13 +448,13 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
             color: DesignTokens.primary500,
           ),
           const SizedBox(width: DesignTokens.space8),
-          Text('${spacing.toInt()}px', 
-               style: Theme.of(context).textTheme.bodySmall),
+          Text('${spacing.toInt()}px',
+              style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );
   }
-  
+
   Widget _buildAccessibilitySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,7 +497,8 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
               context: context,
               builder: (context) => AccessibleComponents.dialog(
                 title: 'Exemplo de Dialog',
-                content: 'Este é um exemplo de dialog acessível com navegação por teclado e semântica adequada.',
+                content:
+                    'Este é um exemplo de dialog acessível com navegação por teclado e semântica adequada.',
                 confirmText: 'Confirmar',
                 cancelText: 'Cancelar',
                 onConfirm: () => Navigator.of(context).pop(),
@@ -508,8 +511,9 @@ class _DesignSystemExampleState extends State<DesignSystemExample> {
       ],
     );
   }
-  
-  Widget _buildAccessibilityFeature(String title, String description, IconData icon) {
+
+  Widget _buildAccessibilityFeature(
+      String title, String description, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: DesignTokens.space8),
       child: Row(

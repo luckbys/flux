@@ -12,16 +12,22 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthStore>(
       builder: (context, authStore, child) {
+        debugPrint('🔄 AuthWrapper - Estado atual: ${authStore.state}');
+
         switch (authStore.state) {
           case AuthState.initial:
           case AuthState.loading:
             return const AuthLoadingScreen();
 
           case AuthState.authenticated:
+            debugPrint(
+                '✅ AuthWrapper - Usuário autenticado, redirecionando para MainLayout');
             return const MainLayout();
 
           case AuthState.unauthenticated:
           case AuthState.error:
+            debugPrint(
+                '❌ AuthWrapper - Usuário não autenticado, mostrando LoginPage');
             return const LoginPage();
         }
       },

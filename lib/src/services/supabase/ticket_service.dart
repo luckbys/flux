@@ -484,16 +484,20 @@ class TicketService {
     try {
       app_user.User customer;
       try {
-        customer = json['customer'] != null
-            ? app_user.User.fromJson(json['customer'])
-            : app_user.User(
-                id: json['customer_id']?.toString() ?? '',
-                name: 'Cliente',
-                email: 'cliente@email.com',
-                role: app_user.UserRole.customer,
-                status: app_user.UserStatus.offline,
-                createdAt: DateTime.now(),
-              );
+        if (json['customer'] != null &&
+            json['customer'] is Map<String, dynamic>) {
+          customer = app_user.User.fromJson(json['customer']);
+        } else {
+          customer = app_user.User(
+            id: json['customer_id']?.toString() ?? '',
+            name: json['customer']?['name']?.toString() ?? 'Cliente',
+            email:
+                json['customer']?['email']?.toString() ?? 'cliente@email.com',
+            role: app_user.UserRole.customer,
+            status: app_user.UserStatus.offline,
+            createdAt: DateTime.now(),
+          );
+        }
         AppConfig.log('  customer mapeado: ${customer.name}',
             tag: 'TicketService');
       } catch (e) {

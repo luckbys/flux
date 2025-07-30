@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'new_ticket_form.dart';
-import '../widgets/form_components.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../models/ticket.dart';
+import '../models/user.dart';
+import '../models/message.dart';
+import '../components/tickets/ticket_card.dart';
+import '../styles/app_theme.dart';
 
 class TicketDashboard extends StatefulWidget {
   const TicketDashboard({super.key});
@@ -10,145 +14,339 @@ class TicketDashboard extends StatefulWidget {
 }
 
 class _TicketDashboardState extends State<TicketDashboard> {
-  final List<TicketModel> _tickets = [
-    TicketModel(
-      id: 'TK001',
-      title: 'Problema no login do sistema',
-      status: 'Aberto',
-      priority: 'Alta',
-      category: 'Técnico',
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-    TicketModel(
-      id: 'TK002',
-      title: 'Solicitação de novo usuário',
-      status: 'Em Andamento',
-      priority: 'Média',
-      category: 'RH',
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    TicketModel(
-      id: 'TK003',
-      title: 'Bug na tela de relatórios',
-      status: 'Resolvido',
-      priority: 'Baixa',
-      category: 'Bug',
-      createdAt: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-  ];
+  final List<Ticket> _tickets = [];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FormComponents.backgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Central de Tickets',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: FormComponents.textColor,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Implementar busca
-            },
+  void initState() {
+    super.initState();
+    _loadSampleTickets();
+  }
+
+  void _loadSampleTickets() {
+    final customer = User(
+      id: '1',
+      name: 'João Silva',
+      email: 'joao@exemplo.com',
+      status: UserStatus.online,
+      role: UserRole.customer,
+      createdAt: DateTime.now().subtract(const Duration(days: 30)),
+    );
+
+    final agent = User(
+      id: '2',
+      name: 'Maria Santos',
+      email: 'maria@empresa.com',
+      status: UserStatus.online,
+      role: UserRole.agent,
+      createdAt: DateTime.now().subtract(const Duration(days: 60)),
+    );
+
+    _tickets.addAll([
+      Ticket(
+        id: 'TKT-2024-001',
+        title: 'Problema com login no sistema',
+        description:
+            'Não consigo fazer login no sistema desde ontem. Aparece erro de credenciais inválidas mesmo com a senha correta.',
+        status: TicketStatus.open,
+        priority: TicketPriority.high,
+        category: TicketCategory.technical,
+        customer: customer,
+        assignedAgent: agent,
+        tags: const [
+          TicketTag(id: '1', name: 'Login', color: '#3B82F6'),
+          TicketTag(id: '2', name: 'Urgente', color: '#EF4444'),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+        updatedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+        messages: [
+          Message(
+            id: '1',
+            content: 'Olá, preciso de ajuda com meu login.',
+            type: MessageType.text,
+            status: MessageStatus.read,
+            sender: customer,
+            chatId: 'chat-1',
+            createdAt: DateTime.now().subtract(const Duration(hours: 2)),
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // Implementar filtros
-            },
+          Message(
+            id: '2',
+            content:
+                'Olá João! Vou ajudá-lo com isso. Pode me enviar uma captura de tela do erro?',
+            type: MessageType.text,
+            status: MessageStatus.read,
+            sender: agent,
+            chatId: 'chat-1',
+            createdAt:
+                DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatsSection(),
-            const SizedBox(height: 24),
-            _buildQuickActions(),
-            const SizedBox(height: 24),
-            _buildTicketsList(),
-          ],
+      Ticket(
+        id: 'TKT-2024-002',
+        title: 'Dúvida sobre faturamento',
+        description:
+            'Gostaria de entender melhor como funciona o sistema de faturamento mensal.',
+        status: TicketStatus.inProgress,
+        priority: TicketPriority.normal,
+        category: TicketCategory.billing,
+        customer: User(
+          id: '3',
+          name: 'Ana Costa',
+          email: 'ana@exemplo.com',
+          status: UserStatus.online,
+          role: UserRole.customer,
+          createdAt: DateTime.now().subtract(const Duration(days: 45)),
         ),
+        assignedAgent: agent,
+        tags: const [
+          TicketTag(id: '3', name: 'Faturamento', color: '#F59E0B'),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        updatedAt: DateTime.now().subtract(const Duration(hours: 3)),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const NewTicketForm(),
-            ),
-          );
-        },
-        backgroundColor: FormComponents.primaryColor,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo Ticket'),
+      Ticket(
+        id: 'TKT-2024-003',
+        title: 'Sugestão de nova funcionalidade',
+        description:
+            'Seria muito útil ter um relatório de vendas em tempo real no dashboard.',
+        status: TicketStatus.waitingCustomer,
+        priority: TicketPriority.low,
+        category: TicketCategory.feature,
+        customer: User(
+          id: '4',
+          name: 'Carlos Oliveira',
+          email: 'carlos@exemplo.com',
+          status: UserStatus.offline,
+          role: UserRole.customer,
+          createdAt: DateTime.now().subtract(const Duration(days: 90)),
+        ),
+        tags: const [
+          TicketTag(id: '4', name: 'Sugestão', color: '#10B981'),
+          TicketTag(id: '5', name: 'Dashboard', color: '#8B5CF6'),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(days: 2)),
+        updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+      Ticket(
+        id: 'TKT-2024-004',
+        title: 'Reclamação sobre atendimento',
+        description:
+            'O atendimento que recebi ontem foi muito ruim. O agente não resolveu meu problema.',
+        status: TicketStatus.open,
+        priority: TicketPriority.urgent,
+        category: TicketCategory.complaint,
+        customer: User(
+          id: '5',
+          name: 'Fernanda Lima',
+          email: 'fernanda@exemplo.com',
+          status: UserStatus.online,
+          role: UserRole.customer,
+          createdAt: DateTime.now().subtract(const Duration(days: 15)),
+        ),
+        tags: const [
+          TicketTag(id: '6', name: 'Reclamação', color: '#EF4444'),
+          TicketTag(id: '7', name: 'Crítico', color: '#DC2626'),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(hours: 30)),
+        updatedAt: DateTime.now().subtract(const Duration(minutes: 15)),
+      ),
+    ]);
+  }
+
+  void _onTicketTap(Ticket ticket) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Ticket ${ticket.id} selecionado'),
+        backgroundColor: AppTheme.primaryColor,
       ),
     );
   }
 
-  Widget _buildStatsSection() {
-    return FormComponents.buildFormCard(
-      children: [
-        FormComponents.buildSectionTitle('Resumo dos Tickets',
-            icon: Icons.analytics),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                title: 'Total',
-                value: '${_tickets.length}',
-                color: Colors.blue,
-                icon: Icons.confirmation_number,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                title: 'Abertos',
-                value: '${_tickets.where((t) => t.status == 'Aberto').length}',
-                color: Colors.orange,
-                icon: Icons.pending,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                title: 'Resolvidos',
-                value:
-                    '${_tickets.where((t) => t.status == 'Resolvido').length}',
-                color: Colors.green,
-                icon: Icons.check_circle,
-              ),
-            ),
-          ],
-        ),
-      ],
+  void _onEditTicket(Ticket ticket) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Editando ticket ${ticket.id}'),
+        backgroundColor: AppTheme.warningColor,
+      ),
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-  }) {
+  void _onAssignTicket(Ticket ticket) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Atribuindo ticket ${ticket.id}'),
+        backgroundColor: AppTheme.successColor,
+      ),
+    );
+  }
+
+  void _onChatTicket(Ticket ticket) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Abrindo chat do ticket ${ticket.id}'),
+        backgroundColor: AppTheme.primaryColor,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    final isTablet = screenWidth >= 768 && screenWidth < 1024;
+    final isDesktop = screenWidth >= 1024;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard de Tickets'),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.primaryColor.withValues(alpha: 0.1),
+              AppTheme.getBackgroundColor(context),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header com estatísticas
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Total',
+                        _tickets.length.toString(),
+                        AppTheme.primaryColor,
+                        PhosphorIcons.ticket(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Abertos',
+                        _tickets
+                            .where((t) => t.status == TicketStatus.open)
+                            .length
+                            .toString(),
+                        AppTheme.warningColor,
+                        PhosphorIcons.warning(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Urgentes',
+                        _tickets
+                            .where((t) => t.priority == TicketPriority.urgent)
+                            .length
+                            .toString(),
+                        AppTheme.errorColor,
+                        PhosphorIcons.warning(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Lista de tickets com layout responsivo
+              Expanded(
+                child: isMobile
+                    ? _buildMobileLayout()
+                    : _buildDesktopLayout(isTablet, isDesktop),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _tickets.length,
+      itemBuilder: (context, index) {
+        final ticket = _tickets[index];
+        return TicketCard(
+          ticket: ticket,
+          onTap: () => _onTicketTap(ticket),
+          onEdit: () => _onEditTicket(ticket),
+          onAssign: () => _onAssignTicket(ticket),
+          onChat: () => _onChatTicket(ticket),
+          showActions: true,
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopLayout(bool isTablet, bool isDesktop) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          // Layout em grid usando Wrap para evitar problemas de ParentDataWidget
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
+            alignment: WrapAlignment.start,
+            children: _tickets.map((ticket) {
+              return ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isDesktop ? 650 : double.infinity,
+                  minWidth: isDesktop ? 600 : double.infinity,
+                ),
+                child: TicketCard(
+                  ticket: ticket,
+                  onTap: () => _onTicketTap(ticket),
+                  onEdit: () => _onEditTicket(ticket),
+                  onAssign: () => _onAssignTicket(ticket),
+                  onChat: () => _onChatTicket(ticket),
+                  showActions: true,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+      String title, String value, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
+          Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
           const SizedBox(height: 8),
           Text(
             value,
@@ -158,252 +356,17 @@ class _TicketDashboardState extends State<TicketDashboard> {
               color: color,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: AppTheme.getTextColor(context).withValues(alpha: 0.7),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildQuickActions() {
-    return FormComponents.buildFormCard(
-      children: [
-        FormComponents.buildSectionTitle('Ações Rápidas', icon: Icons.flash_on),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'Novo Ticket',
-                subtitle: 'Criar solicitação',
-                icon: Icons.add_circle_outline,
-                color: FormComponents.primaryColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const NewTicketForm(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'Meus Tickets',
-                subtitle: 'Ver histórico',
-                icon: Icons.history,
-                color: Colors.green,
-                onTap: () {
-                  // Implementar navegação para meus tickets
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionButton(
-                title: 'FAQ',
-                subtitle: 'Perguntas frequentes',
-                icon: Icons.help_center,
-                color: Colors.orange,
-                onTap: () {
-                  // Implementar navegação para FAQ
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionButton({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTicketsList() {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FormComponents.buildSectionTitle('Tickets Recentes',
-              icon: Icons.list),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _tickets.length,
-              itemBuilder: (context, index) {
-                final ticket = _tickets[index];
-                return _buildTicketCard(ticket);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTicketCard(TicketModel ticket) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: FormComponents.buildFormCard(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          ticket.id,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        FormComponents.buildStatusChip(
-                          label: ticket.status,
-                          color: _getStatusColor(ticket.status),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      ticket.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        FormComponents.buildStatusChip(
-                          label: ticket.priority,
-                          color: ticket.priority.priorityColor,
-                          icon: ticket.priority.priorityIcon,
-                        ),
-                        const SizedBox(width: 8),
-                        FormComponents.buildStatusChip(
-                          label: ticket.category,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Criado em ${_formatDate(ticket.createdAt)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                onPressed: () {
-                  // Implementar navegação para detalhes do ticket
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'aberto':
-        return Colors.orange;
-      case 'em andamento':
-        return Colors.blue;
-      case 'resolvido':
-        return Colors.green;
-      case 'fechado':
-        return Colors.grey;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} dia${difference.inDays > 1 ? 's' : ''} atrás';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''} atrás';
-    } else {
-      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''} atrás';
-    }
-  }
-}
-
-class TicketModel {
-  final String id;
-  final String title;
-  final String status;
-  final String priority;
-  final String category;
-  final DateTime createdAt;
-
-  TicketModel({
-    required this.id,
-    required this.title,
-    required this.status,
-    required this.priority,
-    required this.category,
-    required this.createdAt,
-  });
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../models/ticket.dart';
 import '../../models/user.dart';
-import '../../widgets/form_components.dart';
 import 'ticket_modal_components.dart';
 import 'ticket_modal_sidebar.dart';
 
@@ -64,6 +62,7 @@ class _TicketFormModalState extends State<TicketFormModal>
   bool _smsNotifications = false;
   bool _isLoading = false;
   final bool _isDraft = false;
+  bool _isSidebarMinimized = false;
 
   // Animations
   late AnimationController _animationController;
@@ -299,6 +298,8 @@ class _TicketFormModalState extends State<TicketFormModal>
           onCancel: () => Navigator.of(context).pop(),
           isLoading: _isLoading,
           isEditing: widget.ticket != null,
+          isMinimized: _isSidebarMinimized,
+          onToggleMinimize: () => setState(() => _isSidebarMinimized = !_isSidebarMinimized),
         ),
       ],
     );

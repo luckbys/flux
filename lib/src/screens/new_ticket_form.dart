@@ -5,13 +5,9 @@ import 'package:provider/provider.dart';
 import '../stores/ticket_store.dart';
 import '../stores/auth_store.dart';
 import '../models/ticket.dart';
-import '../components/ui/glass_container.dart';
-import '../components/ui/micro_animations.dart';
 import '../components/ui/loading_overlay.dart';
 import '../components/ui/toast_message.dart';
 import '../widgets/form_components.dart';
-import '../styles/app_theme.dart';
-import '../styles/app_constants.dart';
 
 class NewTicketForm extends StatefulWidget {
   const NewTicketForm({super.key});
@@ -90,61 +86,225 @@ class _NewTicketFormState extends State<NewTicketForm>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Novo Ticket'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(PhosphorIcons.arrowLeft()),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Stack(
-        children: [
-          _buildForm(),
-          if (_isSubmitting) _buildLoadingOverlay(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildForm() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            FormComponents.backgroundColor,
-            FormComponents.backgroundColor.withOpacity(0.8),
-          ],
-        ),
-      ),
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeaderSection(),
-                const SizedBox(height: 24),
-                _buildBasicInfoSection(),
-                const SizedBox(height: 24),
-                _buildCategorizationSection(),
-                const SizedBox(height: 24),
-                _buildDescriptionSection(),
-                const SizedBox(height: 24),
-                _buildNotificationSection(),
-                const SizedBox(height: 32),
-                _buildActionButtons(),
-                const SizedBox(height: 20),
-              ],
-            ),
+        title: const Text(
+          'Novo Ticket',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1F2937),
           ),
         ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shadowColor: Colors.black.withValues(alpha: 0.05),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE2E8F0),
+              width: 1,
+            ),
+          ),
+          child: IconButton(
+            icon: Icon(
+              PhosphorIcons.arrowLeft(),
+              color: const Color(0xFF374151),
+              size: 20,
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF3B82F6),
+                  Color(0xFF1D4ED8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: _isSubmitting ? null : _submitForm,
+              icon: _isSubmitting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Icon(
+                      PhosphorIcons.check(),
+                      color: Colors.white,
+                      size: 20,
+                    ),
+            ),
+          ),
+        ],
+      ),
+      body: AnimatedBuilder(
+        animation: _fadeAnimation,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _fadeAnimation.value,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFormSection(
+                      title: 'Informações Básicas',
+                      icon: PhosphorIcons.ticket(),
+                      children: [
+                        _buildTextField(
+                          controller: _titleController,
+                          label: 'Título do Ticket',
+                          hint: 'Digite um título descritivo',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite um título';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          controller: _descriptionController,
+                          label: 'Descrição',
+                          hint:
+                              'Descreva detalhadamente o problema ou solicitação',
+                          maxLines: 4,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite uma descrição';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildFormSection(
+                      title: 'Classificação',
+                      icon: PhosphorIcons.tag(),
+                      children: [
+                        _buildDropdownField(
+                          label: 'Prioridade',
+                          value: _selectedPriority,
+                          items: _priorities,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedPriority = value!;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDropdownField(
+                          label: 'Categoria',
+                          value: _selectedCategory,
+                          items: _categories,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCategory = value!;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDropdownField(
+                          label: 'Departamento',
+                          value: _selectedDepartment,
+                          items: _departments,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedDepartment = value!;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildFormSection(
+                      title: 'Informações de Contato',
+                      icon: PhosphorIcons.user(),
+                      children: [
+                        _buildTextField(
+                          controller: _emailController,
+                          label: 'Email',
+                          hint: 'email@exemplo.com',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite um email';
+                            }
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                .hasMatch(value)) {
+                              return 'Por favor, digite um email válido';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          controller: _phoneController,
+                          label: 'Telefone (opcional)',
+                          hint: '(11) 99999-9999',
+                          keyboardType: TextInputType.phone,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _buildFormSection(
+                      title: 'Notificações',
+                      icon: PhosphorIcons.bell(),
+                      children: [
+                        _buildSwitchTile(
+                          title: 'Notificar por Email',
+                          subtitle: 'Receber atualizações por email',
+                          value: _notifyByEmail,
+                          onChanged: (value) {
+                            setState(() {
+                              _notifyByEmail = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildSwitchTile(
+                          title: 'Notificar por SMS',
+                          subtitle: 'Receber atualizações por SMS',
+                          value: _notifyBySms,
+                          onChanged: (value) {
+                            setState(() {
+                              _notifyBySms = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -710,6 +870,238 @@ class _NewTicketFormState extends State<NewTicketForm>
           textColor: Colors.white,
           onPressed: _submitForm,
         ),
+      ),
+    );
+  }
+
+  Widget _buildFormSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFF3B82F6),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF374151),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(
+              color: Color(0xFF9CA3AF),
+              fontSize: 14,
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFE2E8F0),
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFE2E8F0),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF3B82F6),
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF374151),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE2E8F0),
+              width: 1,
+            ),
+          ),
+          child: DropdownButtonFormField<String>(
+            value: value,
+            onChanged: onChanged,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            items: items.map((String item) {
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Text(
+                  item,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF374151),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF3B82F6),
+          ),
+        ],
       ),
     );
   }

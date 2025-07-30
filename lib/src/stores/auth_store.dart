@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase/supabase_service.dart';
 import '../models/user.dart' as app_user;
 import '../config/app_config.dart';
-import '../pages/auth/login_page.dart';
 
 enum AuthState {
   initial,

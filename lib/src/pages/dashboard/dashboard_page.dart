@@ -253,11 +253,7 @@ class _DashboardPageState extends State<DashboardPage>
                 ),
               ),
               const Spacer(),
-              _buildMobileHeaderActionButton(
-                icon: PhosphorIcons.bell(),
-                badge: '3',
-                onTap: () {},
-              ),
+
             ],
           ),
           const SizedBox(height: 16),
@@ -414,91 +410,95 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Widget _buildEnhancedStatsGrid() {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0, 0.3),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _slideController,
-        curve: Curves.easeOutCubic,
-      )),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final crossAxisCount = constraints.maxWidth >= 1200
-              ? 4
-              : constraints.maxWidth >= 800
-                  ? 3
-                  : 2;
-          final childAspectRatio = constraints.maxWidth >= 1200
-              ? 1.4
-              : constraints.maxWidth >= 800
-                  ? 1.6
-                  : 1.8;
+    return Consumer<DashboardStore>(
+      builder: (context, dashboardStore, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.3),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: _slideController,
+            curve: Curves.easeOutCubic,
+          )),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 1200
+                  ? 4
+                  : constraints.maxWidth >= 800
+                      ? 3
+                      : 2;
+              final childAspectRatio = constraints.maxWidth >= 1200
+                  ? 1.4
+                  : constraints.maxWidth >= 800
+                      ? 1.6
+                      : 1.8;
 
-          return GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: childAspectRatio,
-            children: [
-              _buildEnhancedStatCard(
-                title: 'Total de Tickets',
-                value: '1,247',
-                change: '+12%',
-                isPositive: true,
-                icon: PhosphorIcons.ticket(),
-                color: const Color(0xFF3B82F6),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                ),
-              ),
-              _buildEnhancedStatCard(
-                title: 'Tickets Abertos',
-                value: '89',
-                change: '-5%',
-                isPositive: false,
-                icon: PhosphorIcons.warning(),
-                color: const Color(0xFFEF4444),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                ),
-              ),
-              _buildEnhancedStatCard(
-                title: 'Em Andamento',
-                value: '156',
-                change: '+8%',
-                isPositive: true,
-                icon: PhosphorIcons.clock(),
-                color: const Color(0xFFF59E0B),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                ),
-              ),
-              _buildEnhancedStatCard(
-                title: 'Resolvidos',
-                value: '1,002',
-                change: '+15%',
-                isPositive: true,
-                icon: PhosphorIcons.checkCircle(),
-                color: const Color(0xFF10B981),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF10B981), Color(0xFF059669)],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+              return GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: childAspectRatio,
+                children: [
+                  _buildEnhancedStatCard(
+                    title: 'Total de Tickets',
+                    value: _formatNumber(dashboardStore.totalTickets),
+                    change: '+12%',
+                    isPositive: true,
+                    icon: PhosphorIcons.ticket(),
+                    color: const Color(0xFF3B82F6),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                    ),
+                  ),
+                  _buildEnhancedStatCard(
+                    title: 'Tickets Abertos',
+                    value: _formatNumber(dashboardStore.openTickets),
+                    change: '-5%',
+                    isPositive: false,
+                    icon: PhosphorIcons.warning(),
+                    color: const Color(0xFFEF4444),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                    ),
+                  ),
+                  _buildEnhancedStatCard(
+                    title: 'Em Andamento',
+                    value: _formatNumber(dashboardStore.ticketStats['inProgress'] ?? 0),
+                    change: '+8%',
+                    isPositive: true,
+                    icon: PhosphorIcons.clock(),
+                    color: const Color(0xFFF59E0B),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    ),
+                  ),
+                  _buildEnhancedStatCard(
+                    title: 'Resolvidos',
+                    value: _formatNumber(dashboardStore.ticketStats['resolved'] ?? 0),
+                    change: '+15%',
+                    isPositive: true,
+                    icon: PhosphorIcons.checkCircle(),
+                    color: const Color(0xFF10B981),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -763,7 +763,7 @@ class _DashboardPageState extends State<DashboardPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -870,11 +870,11 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    const Text(
                       'Problema com login no sistema - Cliente reporta dificuldades',
                       style: TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFF6B7280),
+                        color: Color(0xFF6B7280),
                         height: 1.4,
                       ),
                     ),
@@ -889,7 +889,7 @@ class _DashboardPageState extends State<DashboardPage>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: priorityColor.withOpacity(0.1),
+                      color: priorityColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -1048,9 +1048,9 @@ class _DashboardPageState extends State<DashboardPage>
                     const SizedBox(height: 4),
                     Text(
                       messages[index],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFF6B7280),
+                        color: Color(0xFF6B7280),
                         height: 1.4,
                       ),
                       maxLines: 2,
@@ -1150,11 +1150,32 @@ class _DashboardPageState extends State<DashboardPage>
             ],
           ),
           const SizedBox(height: 20),
-          _buildMetricItem('Tempo Médio de Resposta', '2.3h', '+15%'),
-          const SizedBox(height: 12),
-          _buildMetricItem('Satisfação do Cliente', '4.8/5', '+8%'),
-          const SizedBox(height: 12),
-          _buildMetricItem('Tickets Resolvidos', '89%', '+12%'),
+          Consumer<DashboardStore>(
+            builder: (context, dashboardStore, child) {
+              final metrics = dashboardStore.performanceMetrics;
+              return Column(
+                children: [
+                  _buildMetricItem(
+                    'Tempo Médio de Resposta', 
+                    '${metrics['avgResponseTime']?.toStringAsFixed(1) ?? '0'}h', 
+                    '+15%'
+                  ),
+                  const SizedBox(height: 12),
+                  _buildMetricItem(
+                    'Satisfação do Cliente', 
+                    '${metrics['customerSatisfaction']?.toStringAsFixed(1) ?? '0'}/5', 
+                    '+8%'
+                  ),
+                  const SizedBox(height: 12),
+                  _buildMetricItem(
+                    'Tickets Resolvidos', 
+                    '${metrics['resolutionRate']?.toStringAsFixed(0) ?? '0'}%', 
+                    '+12%'
+                  ),
+                ],
+              );
+            },
+          )
         ],
       ),
     );
@@ -1449,47 +1470,51 @@ class _DashboardPageState extends State<DashboardPage>
           ),
         ),
         const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.3,
-          children: [
-            _buildMobileStatCard(
-              title: 'Total de Tickets',
-              value: '1,247',
-              change: '+12%',
-              isPositive: true,
-              icon: PhosphorIcons.ticket(),
-              color: const Color(0xFF3B82F6),
-            ),
-            _buildMobileStatCard(
-              title: 'Tickets Abertos',
-              value: '89',
-              change: '-5%',
-              isPositive: false,
-              icon: PhosphorIcons.warning(),
-              color: const Color(0xFFEF4444),
-            ),
-            _buildMobileStatCard(
-              title: 'Em Andamento',
-              value: '156',
-              change: '+8%',
-              isPositive: true,
-              icon: PhosphorIcons.clock(),
-              color: const Color(0xFFF59E0B),
-            ),
-            _buildMobileStatCard(
-              title: 'Resolvidos',
-              value: '1,002',
-              change: '+15%',
-              isPositive: true,
-              icon: PhosphorIcons.checkCircle(),
-              color: const Color(0xFF10B981),
-            ),
-          ],
+        Consumer<DashboardStore>(
+          builder: (context, dashboardStore, child) {
+            return GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.3,
+              children: [
+                _buildMobileStatCard(
+                  title: 'Total de Tickets',
+                  value: _formatNumber(dashboardStore.totalTickets),
+                  change: '+12%',
+                  isPositive: true,
+                  icon: PhosphorIcons.ticket(),
+                  color: const Color(0xFF3B82F6),
+                ),
+                _buildMobileStatCard(
+                  title: 'Tickets Abertos',
+                  value: _formatNumber(dashboardStore.openTickets),
+                  change: '-5%',
+                  isPositive: false,
+                  icon: PhosphorIcons.warning(),
+                  color: const Color(0xFFEF4444),
+                ),
+                _buildMobileStatCard(
+                  title: 'Em Andamento',
+                  value: _formatNumber(dashboardStore.ticketStats['inProgress'] ?? 0),
+                  change: '+8%',
+                  isPositive: true,
+                  icon: PhosphorIcons.clock(),
+                  color: const Color(0xFFF59E0B),
+                ),
+                _buildMobileStatCard(
+                  title: 'Resolvidos',
+                  value: _formatNumber(dashboardStore.ticketStats['resolved'] ?? 0),
+                  change: '+15%',
+                  isPositive: true,
+                  icon: PhosphorIcons.checkCircle(),
+                  color: const Color(0xFF10B981),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -1849,24 +1874,30 @@ class _DashboardPageState extends State<DashboardPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Ticket #${1000 + index}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
+                    Flexible(
+                      child: Text(
+                        'Ticket #${1000 + index}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      'Problema com login no sistema',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: const Color(0xFF6B7280),
-                        height: 1.3,
+                    const Flexible(
+                      child: Text(
+                        'Problema com login no sistema',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7280),
+                          height: 1.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -2012,24 +2043,30 @@ class _DashboardPageState extends State<DashboardPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      names[index],
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
+                    Flexible(
+                      child: Text(
+                        names[index],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      messages[index],
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: const Color(0xFF6B7280),
-                        height: 1.3,
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        messages[index],
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6B7280),
+                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -2038,11 +2075,15 @@ class _DashboardPageState extends State<DashboardPage>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    times[index],
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Color(0xFF9CA3AF),
+                  Flexible(
+                    child: Text(
+                      times[index],
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -2125,11 +2166,32 @@ class _DashboardPageState extends State<DashboardPage>
             ],
           ),
           const SizedBox(height: 16),
-          _buildMobileMetricItem('Tempo Médio de Resposta', '2.3h', '+15%'),
-          const SizedBox(height: 8),
-          _buildMobileMetricItem('Satisfação do Cliente', '4.8/5', '+8%'),
-          const SizedBox(height: 8),
-          _buildMobileMetricItem('Tickets Resolvidos', '89%', '+12%'),
+          Consumer<DashboardStore>(
+            builder: (context, dashboardStore, child) {
+              final metrics = dashboardStore.performanceMetrics;
+              return Column(
+                children: [
+                  _buildMobileMetricItem(
+                    'Tempo Médio de Resposta', 
+                    '${metrics['avgResponseTime']?.toStringAsFixed(1) ?? '0'}h', 
+                    '+15%'
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMobileMetricItem(
+                    'Satisfação do Cliente', 
+                    '${metrics['customerSatisfaction']?.toStringAsFixed(1) ?? '0'}/5', 
+                    '+8%'
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMobileMetricItem(
+                    'Tickets Resolvidos', 
+                    '${metrics['resolutionRate']?.toStringAsFixed(0) ?? '0'}%', 
+                    '+12%'
+                  ),
+                ],
+              );
+            },
+          )
         ],
       ),
     );
@@ -2289,6 +2351,13 @@ class _DashboardPageState extends State<DashboardPage>
         ),
       ],
     );
+  }
+
+  String _formatNumber(int number) {
+    if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(number % 1000 == 0 ? 0 : 1)}k';
+    }
+    return number.toString();
   }
 }
 

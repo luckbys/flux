@@ -8,7 +8,7 @@ import 'ticket_form_modal_refactored.dart';
 // TICKET MODAL SIDEBAR
 // =============================================================================
 
-class TicketModalSidebar extends StatelessWidget {
+class TicketModalSidebar extends StatefulWidget {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
   final TicketPriority selectedPriority;
@@ -17,6 +17,8 @@ class TicketModalSidebar extends StatelessWidget {
   final VoidCallback onCancel;
   final bool isLoading;
   final bool isEditing;
+  final bool isMinimized;
+  final VoidCallback? onToggleMinimize;
 
   const TicketModalSidebar({
     super.key,
@@ -28,39 +30,171 @@ class TicketModalSidebar extends StatelessWidget {
     required this.onCancel,
     required this.isLoading,
     required this.isEditing,
+    this.isMinimized = false,
+    this.onToggleMinimize,
   });
 
   @override
+  State<TicketModalSidebar> createState() => _TicketModalSidebarState();
+}
+
+class _TicketModalSidebarState extends State<TicketModalSidebar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _widthAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _widthAnimation = Tween<double>(
+      begin: widget.isMinimized ? 60.0 : 380.0,
+      end: widget.isMinimized ? 60.0 : 380.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void didUpdateWidget(TicketModalSidebar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isMinimized != widget.isMinimized) {
+      _widthAnimation = Tween<double>(
+        begin: _widthAnimation.value,
+        end: widget.isMinimized ? 60.0 : 380.0,
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+      _animationController.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 380,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.grey[50]!,
-            Colors.grey[100]!,
-          ],
-        ),
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-        border: Border(
-          left: BorderSide(
-            color: Colors.grey.withValues(alpha: 0.15),
-            width: 1,
+    return AnimatedBuilder(
+      animation: _widthAnimation,
+      builder: (context, child) {
+        return Container(
+          width: _widthAnimation.value,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.grey[50]!,
+                Colors.grey[100]!,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+            border: Border(
+              left: BorderSide(
+                color: Colors.grey.withValues(alpha: 0.15),
+                width: 1,
+              ),
+            ),
+          ),
+          child: widget.isMinimized
+              ? _buildMinimizedSidebar()
+              : Column(
+                  children: [
+                    _buildSidebarHeader(),
+                    Expanded(child: _buildSidebarContent()),
+                    _buildSidebarFooter(),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMinimizedSidebar() {
+    return Column(
+      children: [
+        // Header minimizado
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              IconButton(
+                onPressed: widget.onToggleMinimize,
+                icon: Icon(
+                  PhosphorIcons.caretRight(),
+                  color: FormComponents.primaryColor,
+                  size: 20,
+                ),
+                tooltip: 'Expandir sidebar',
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: FormComponents.primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  PhosphorIcons.lightbulb(),
+                  color: FormComponents.primaryColor,
+                  size: 16,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildSidebarHeader(),
-          Expanded(child: _buildSidebarContent()),
-          _buildSidebarFooter(),
-        ],
-      ),
+        const Spacer(),
+        // Botões minimizados
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              IconButton(
+                onPressed: widget.onSubmit,
+                icon: Icon(
+                  widget.isEditing ? PhosphorIcons.pencil() : PhosphorIcons.plus(),
+                  color: Colors.white,
+                  size: 16,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: FormComponents.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                tooltip: widget.isEditing ? 'Atualizar Ticket' : 'Criar Ticket',
+              ),
+              const SizedBox(height: 8),
+              IconButton(
+                onPressed: widget.onCancel,
+                icon: Icon(
+                  PhosphorIcons.x(),
+                  color: Colors.grey[600],
+                  size: 16,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                tooltip: 'Cancelar',
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -85,12 +219,23 @@ class TicketModalSidebar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Dicas Rápidas',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              const Expanded(
+                child: Text(
+                  'Dicas Rápidas',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+              ),
+              IconButton(
+                onPressed: widget.onToggleMinimize,
+                icon: Icon(
+                  PhosphorIcons.caretLeft(),
+                  color: Colors.grey[600],
+                  size: 16,
+                ),
+                tooltip: 'Minimizar sidebar',
               ),
             ],
           ),
@@ -177,8 +322,8 @@ class TicketModalSidebar extends StatelessWidget {
   }
 
   bool _shouldShowPreview() {
-    return titleController.text.isNotEmpty ||
-        descriptionController.text.isNotEmpty;
+    return widget.titleController.text.isNotEmpty ||
+        widget.descriptionController.text.isNotEmpty;
   }
 
   Widget _buildTicketPreview() {
@@ -219,9 +364,9 @@ class TicketModalSidebar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          if (titleController.text.isNotEmpty) ...[
+          if (widget.titleController.text.isNotEmpty) ...[
             Text(
-              titleController.text,
+              widget.titleController.text,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -234,22 +379,22 @@ class TicketModalSidebar extends StatelessWidget {
           Row(
             children: [
               FormComponents.buildStatusChip(
-                label: _getPriorityText(selectedPriority),
-                color: _getPriorityColor(selectedPriority),
-                icon: _getPriorityIcon(selectedPriority),
+                label: _getPriorityText(widget.selectedPriority),
+                color: _getPriorityColor(widget.selectedPriority),
+                icon: _getPriorityIcon(widget.selectedPriority),
               ),
               const SizedBox(width: 8),
               FormComponents.buildStatusChip(
-                label: _getCategoryText(selectedCategory),
+                label: _getCategoryText(widget.selectedCategory),
                 color: FormComponents.primaryColor,
                 icon: PhosphorIcons.tag(),
               ),
             ],
           ),
-          if (descriptionController.text.isNotEmpty) ...[
+          if (widget.descriptionController.text.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              descriptionController.text,
+              widget.descriptionController.text,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -335,10 +480,10 @@ class TicketModalSidebar extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FormComponents.buildPrimaryButton(
-              text: isEditing ? 'Atualizar Ticket' : 'Criar Ticket',
-              onPressed: onSubmit,
-              icon: isEditing ? PhosphorIcons.pencil() : PhosphorIcons.plus(),
-              isLoading: isLoading,
+              text: widget.isEditing ? 'Atualizar Ticket' : 'Criar Ticket',
+              onPressed: widget.onSubmit,
+              icon: widget.isEditing ? PhosphorIcons.pencil() : PhosphorIcons.plus(),
+              isLoading: widget.isLoading,
             ),
           ),
           const SizedBox(height: 12),
@@ -346,7 +491,7 @@ class TicketModalSidebar extends StatelessWidget {
             width: double.infinity,
             child: FormComponents.buildSecondaryButton(
               text: 'Cancelar',
-              onPressed: onCancel,
+              onPressed: widget.onCancel,
               icon: PhosphorIcons.x(),
             ),
           ),

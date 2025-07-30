@@ -14,6 +14,7 @@ import 'src/stores/ticket_store.dart';
 import 'src/stores/quote_store.dart';
 import 'src/stores/theme_store.dart';
 import 'src/stores/dashboard_store.dart';
+import 'src/stores/notification_store.dart';
 import 'src/components/auth/auth_wrapper.dart';
 
 import 'src/config/app_config.dart';
@@ -111,6 +112,9 @@ class _BKCRMAppState extends State<BKCRMApp> {
         ),
         ChangeNotifierProvider<DashboardStore>(
           create: (_) => DashboardStore(),
+        ),
+        ChangeNotifierProvider<NotificationStore>(
+          create: (_) => NotificationStore(),
         ),
         // Provider para Supabase
         Provider<SupabaseService>(

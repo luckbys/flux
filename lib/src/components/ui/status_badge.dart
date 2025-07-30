@@ -30,8 +30,12 @@ class StatusBadge extends StatelessWidget {
     return Container(
       width: width,
       height: height,
+      constraints: const BoxConstraints(
+        minWidth: 60,
+        maxWidth: 120,
+      ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacing12,
+        horizontal: AppTheme.spacing8,
         vertical: AppTheme.spacing4,
       ),
       decoration: BoxDecoration(
@@ -39,13 +43,18 @@ class StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: isOutlined ? Border.all(color: color, width: 1) : null,
       ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: fgColor,
-              fontWeight: FontWeight.w500,
-            ),
-        textAlign: TextAlign.center,
+      child: Flexible(
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: fgColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+              ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       ),
     );
   }

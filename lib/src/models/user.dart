@@ -40,24 +40,26 @@ class User extends Equatable {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      avatarUrl: json['avatar_url'] as String?,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Usuário',
+      email: json['email']?.toString() ?? 'usuario@email.com',
+      avatarUrl: json['avatar_url']?.toString(),
       role: UserRole.values.firstWhere(
-        (e) => e.name == json['role'],
+        (e) => e.name == json['role']?.toString(),
         orElse: () => UserRole.customer,
       ),
       status: UserStatus.values.firstWhere(
-        (e) => e.name == json['user_status'],
+        (e) => e.name == json['user_status']?.toString(),
         orElse: () => UserStatus.offline,
       ),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+          : DateTime.now(),
       lastSeen: json['last_seen'] != null
-          ? DateTime.parse(json['last_seen'] as String)
+          ? DateTime.tryParse(json['last_seen'].toString())
           : null,
-      department: json['department'] as String?,
-      phone: json['phone'] as String?,
+      department: json['department']?.toString(),
+      phone: json['phone']?.toString(),
     );
   }
 

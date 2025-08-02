@@ -12,13 +12,13 @@ class ChatService {
 
   /// Busca todas as conversas do usuário atual
   Future<List<Chat>> getChats() async {
+    final userId = _supabaseService.currentUserId;
+    if (userId == null) {
+      throw Exception('Usuário não autenticado');
+    }
+
     try {
       AppConfig.log('Buscando conversas...', tag: 'ChatService');
-
-      final userId = _supabaseService.currentUserId;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado');
-      }
 
       // Query real do Supabase
       final response = await _supabaseService
@@ -27,7 +27,6 @@ class ChatService {
             id,
             title,
             type,
-            status,
             created_at,
             updated_at,
             conversation_participants!inner(
@@ -62,6 +61,55 @@ class ChatService {
     } catch (e) {
       AppConfig.log('Erro ao buscar conversas: $e', tag: 'ChatService');
 
+      // Se for erro de schema cache, tentar limpar cache e tentar novamente
+      if (e.toString().contains('PGRST204') ||
+          e.toString().contains('schema cache')) {
+        try {
+          AppConfig.log('Tentando limpar cache e buscar novamente...',
+              tag: 'ChatService');
+          // Aguardar um pouco antes de tentar novamente
+          await Future.delayed(const Duration(seconds: 1));
+
+          final retryResponse = await _supabaseService
+              .from('conversations')
+              .select('''
+                id,
+                title,
+                type,
+                created_at,
+                updated_at,
+                conversation_participants!inner(
+                  user_id,
+                  role,
+                  users(
+                    id,
+                    name,
+                    email,
+                    avatar_url,
+                    phone,
+                    role,
+                    status,
+                    created_at,
+                    last_seen
+                  )
+                ),
+                last_message:messages(
+                  content,
+                  created_at
+                )
+              ''')
+              .eq('conversation_participants.user_id', userId)
+              .order('updated_at', ascending: false)
+              .limit(1, referencedTable: 'messages');
+
+          final List<dynamic> retryData = retryResponse;
+          return retryData.map((json) => _mapToChat(json)).toList();
+        } catch (retryError) {
+          AppConfig.log('Erro na segunda tentativa: $retryError',
+              tag: 'ChatService');
+        }
+      }
+
       // Fallback para dados mock se falhar
       return _getMockChats();
     }
@@ -76,7 +124,6 @@ class ChatService {
             id,
             title,
             type,
-            status,
             created_at,
             updated_at,
             conversation_participants(
@@ -112,13 +159,13 @@ class ChatService {
     required ChatType type,
     required List<String> participantIds,
   }) async {
+    final userId = _supabaseService.currentUserId;
+    if (userId == null) {
+      throw Exception('Usuário não autenticado');
+    }
+
     try {
       AppConfig.log('Criando nova conversa: $title', tag: 'ChatService');
-
-      final userId = _supabaseService.currentUserId;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado');
-      }
 
       // Criar conversa
       final chatResponse = await _supabaseService
@@ -126,7 +173,6 @@ class ChatService {
           .insert({
             'title': title,
             'type': type.name,
-            'status': ChatStatus.active.name,
             'created_by': userId,
           })
           .select()
@@ -158,6 +204,58 @@ class ChatService {
       return await getChatById(chatId);
     } catch (e) {
       AppConfig.log('Erro ao criar conversa: $e', tag: 'ChatService');
+
+      // Se for erro de schema cache, tentar novamente
+      if (e.toString().contains('PGRST204') ||
+          e.toString().contains('schema cache')) {
+        try {
+          AppConfig.log(
+              'Tentando criar conversa novamente após erro de cache...',
+              tag: 'ChatService');
+          await Future.delayed(const Duration(seconds: 1));
+
+          // Tentar criar novamente
+          final chatResponse = await _supabaseService
+              .from('conversations')
+              .insert({
+                'title': title,
+                'type': type.name,
+                'created_by': userId,
+              })
+              .select()
+              .single();
+
+          final chatId = chatResponse['id'] as String;
+
+          // Adicionar participantes (incluindo o criador)
+          final allParticipants = [...participantIds];
+          if (!allParticipants.contains(userId)) {
+            allParticipants.add(userId);
+          }
+
+          final participantsData = allParticipants
+              .map((participantId) => {
+                    'conversation_id': chatId,
+                    'user_id': participantId,
+                    'role': participantId == userId ? 'admin' : 'member',
+                  })
+              .toList();
+
+          await _supabaseService
+              .from('conversation_participants')
+              .insert(participantsData);
+
+          AppConfig.log(
+              'Conversa criada com sucesso na segunda tentativa: $chatId',
+              tag: 'ChatService');
+          return await getChatById(chatId);
+        } catch (retryError) {
+          AppConfig.log(
+              'Erro na segunda tentativa de criar conversa: $retryError',
+              tag: 'ChatService');
+        }
+      }
+
       return null;
     }
   }
@@ -263,10 +361,7 @@ class ChatService {
         (type) => type.name == json['type'],
         orElse: () => ChatType.direct,
       ),
-      status: ChatStatus.values.firstWhere(
-        (status) => status.name == json['status'],
-        orElse: () => ChatStatus.active,
-      ),
+      status: ChatStatus.active, // Status padrão já que a coluna não existe
       participants: participants,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null

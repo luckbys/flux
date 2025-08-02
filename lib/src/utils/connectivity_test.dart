@@ -64,12 +64,12 @@ class ConnectivityTest {
     try {
       final addresses = await NetworkTester.instance.resolveDns(hostname);
       if (kDebugMode) {
-        print('DNS resolvido para $hostname: ${addresses.join(", ")}');
+        debugPrint('DNS resolvido para $hostname: ${addresses.join(", ")}');
       }
       return addresses.isNotEmpty;
     } catch (e) {
       if (kDebugMode) {
-        print('Erro na resolução DNS para $hostname: $e');
+        debugPrint('Erro na resolução DNS para $hostname: $e');
       }
       return false;
     }
@@ -89,13 +89,13 @@ class ConnectivityTest {
       final success = response.statusCode >= 200 && response.statusCode < 500;
       
       if (kDebugMode) {
-        print('HTTP test para $url: ${response.statusCode} - ${success ? "Sucesso" : "Falha"}');
+        debugPrint('HTTP test para $url: ${response.statusCode} - ${success ? "Sucesso" : "Falha"}');
       }
       
       return success;
     } catch (e) {
       if (kDebugMode) {
-        print('Erro no teste HTTP para $url: $e');
+        debugPrint('Erro no teste HTTP para $url: $e');
       }
       return false;
     }

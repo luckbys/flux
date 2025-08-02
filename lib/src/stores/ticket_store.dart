@@ -91,22 +91,10 @@ class TicketStore extends ChangeNotifier {
       AppConfig.log('Buscando ticket: $ticketId', tag: 'TicketStore');
 
       // Verificar se já está na lista
-      final existingTicket = _tickets.firstWhere(
-        (t) => t.id == ticketId,
-        orElse: () => Ticket(
-          id: '',
-          title: '',
-          description: '',
-          status: TicketStatus.open,
-          priority: TicketPriority.normal,
-          category: TicketCategory.general,
-          customer: throw Exception('Not found'),
-          createdAt: DateTime.now(),
-        ),
-      );
-
-      if (existingTicket.id.isNotEmpty) {
-        return existingTicket;
+      // Verificar se já existe na lista local
+      final existingTicketIndex = _tickets.indexWhere((t) => t.id == ticketId);
+      if (existingTicketIndex != -1) {
+        return _tickets[existingTicketIndex];
       }
 
       // Buscar no Supabase

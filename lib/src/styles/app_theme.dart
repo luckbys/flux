@@ -424,7 +424,7 @@ class AppTheme {
       // Configurações para chips no tema escuro
       chipTheme: ChipThemeData(
         backgroundColor: darkSurfaceColor,
-        disabledColor: darkSurfaceColor.withOpacity(0.5),
+        disabledColor: darkSurfaceColor.withValues(alpha: 0.5),
         selectedColor: primaryColor,
         secondarySelectedColor: primaryColor,
         padding: const EdgeInsets.symmetric(
@@ -458,10 +458,10 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith<Color>((states) {
           if (states.contains(WidgetState.disabled)) {
-            return const Color(0xFF9E9E9E).withOpacity(0.3); // darkHintColor
+            return const Color(0xFF9E9E9E).withValues(alpha: 0.3); // darkHintColor
           }
           if (states.contains(WidgetState.selected)) {
-            return primaryColor.withOpacity(0.5);
+            return primaryColor.withValues(alpha: 0.5);
           }
           return darkSurfaceColor;
         }),
@@ -715,7 +715,7 @@ class AppTheme {
         BoxShadow(
           color: isDark
               ? const Color(0x403B82F6)
-                  .withOpacity(0.1) // Sombra azul sutil para tema escuro
+                  .withValues(alpha: 0.1) // Sombra azul sutil para tema escuro
               : Colors.black.withValues(alpha: 0.05),
           blurRadius: isDark ? 10 : 8,
           spreadRadius: 0,
@@ -735,7 +735,7 @@ class AppTheme {
         BoxShadow(
           color: isDark
               ? const Color(0x403B82F6)
-                  .withOpacity(0.2) // Sombra azul para tema escuro
+                  .withValues(alpha: 0.2) // Sombra azul para tema escuro
               : Colors.black.withValues(alpha: 0.1),
           blurRadius: 16,
           spreadRadius: 0,

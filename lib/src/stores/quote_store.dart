@@ -309,10 +309,10 @@ class QuoteStore extends ChangeNotifier {
         await PdfService.printQuote(quote);
       } else {
         // Exportar lista completa (implementação futura)
-        print('Exportação de lista completa não implementada ainda');
+        debugPrint('Exportação de lista completa não implementada ainda');
       }
     } catch (e) {
-      print('Erro ao exportar PDF: $e');
+      debugPrint('Erro ao exportar PDF: $e');
     }
   }
 
@@ -321,7 +321,7 @@ class QuoteStore extends ChangeNotifier {
     try {
       await PdfService.printQuote(quote);
     } catch (e) {
-      print('Erro ao imprimir orçamento: $e');
+      debugPrint('Erro ao imprimir orçamento: $e');
     }
   }
 
@@ -330,7 +330,7 @@ class QuoteStore extends ChangeNotifier {
     try {
       return await PdfService.saveQuotePdf(quote);
     } catch (e) {
-      print('Erro ao salvar PDF: $e');
+      debugPrint('Erro ao salvar PDF: $e');
       return null;
     }
   }
@@ -340,7 +340,7 @@ class QuoteStore extends ChangeNotifier {
     try {
       await PdfService.shareQuotePdf(quote);
     } catch (e) {
-      print('Erro ao compartilhar PDF: $e');
+      debugPrint('Erro ao compartilhar PDF: $e');
     }
   }
 

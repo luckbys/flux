@@ -1,23 +1,35 @@
 import 'dart:convert';
-import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+// Import condicional para dart:html apenas em web
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' if (dart.library.io) 'dart:io';
 
 Future<List<String>> resolveDns(String domain) async {
   return ['127.0.0.1'];
 }
 
 Future<bool> testInternetConnectivity() async {
-  return html.window.navigator.onLine ?? true;
+  // Verificar se estamos em web antes de usar html.window
+  if (kIsWeb) {
+    return window.navigator.onLine ?? true;
+  }
+  return true; // Fallback para outras plataformas
 }
 
 Future<bool> testSupabaseConnectivity(String supabaseUrl) async {
   try {
-    final response = await html.HttpRequest.request(
-      supabaseUrl,
-      method: 'GET',
-      sendData: null,
-    );
-    return response.status! >= 200 && response.status! < 500;
+    // Verificar se estamos em web antes de usar html.HttpRequest
+    if (kIsWeb) {
+      final response = await HttpRequest.request(
+        supabaseUrl,
+        method: 'GET',
+        sendData: null,
+      );
+      return response.status! >= 200 && response.status! < 500;
+    }
+    return true; // Fallback para outras plataformas
   } catch (e) {
     return true;
   }
@@ -38,7 +50,7 @@ Future<String?> getIpFromExternalApi(String domain) async {
     }
     return null;
   } catch (e) {
-    print('❌ Erro ao obter IP via API externa para $domain: $e');
+    debugPrint('❌ Erro ao obter IP via API externa para $domain: $e');
     return null;
   }
 }

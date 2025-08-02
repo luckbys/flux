@@ -211,47 +211,77 @@ class AuthStore extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      AppConfig.log(
-          'Tentando fazer login: $email (Lembrar de mim: $rememberMe)',
-          tag: 'AuthStore');
+      AppConfig.log('🔐 Iniciando processo de login...', tag: 'AuthStore');
+      AppConfig.log('📧 Email: $email', tag: 'AuthStore');
+      AppConfig.log('🔒 RememberMe: $rememberMe', tag: 'AuthStore');
+      
+      // Verificar se o Supabase está inicializado
+      if (!_supabaseService.isInitialized) {
+        AppConfig.log('❌ Supabase não inicializado, tentando inicializar...', tag: 'AuthStore');
+        final initialized = await _supabaseService.initialize();
+        if (!initialized) {
+          _setError('Erro de conexão com o servidor');
+          return false;
+        }
+      }
 
+      AppConfig.log('🚀 Chamando _supabaseService.signIn...', tag: 'AuthStore');
       final response = await _supabaseService.signIn(
         email: email,
         password: password,
         rememberMe: rememberMe,
       );
 
-      if (response?.user != null) {
-        AppConfig.log('Login realizado com sucesso!', tag: 'AuthStore');
+      AppConfig.log('📥 Resposta do Supabase recebida', tag: 'AuthStore');
+      AppConfig.log('👤 User: ${response?.user?.email ?? "null"}', tag: 'AuthStore');
+      AppConfig.log('🎫 Session: ${response?.session?.accessToken != null ? "válida" : "null"}', tag: 'AuthStore');
 
-        // Atualizar o usuário atual imediatamente
+      if (response?.user != null) {
         _supabaseUser = response!.user;
+        AppConfig.log('✅ Login realizado com sucesso!', tag: 'AuthStore');
+        AppConfig.log('🆔 User ID: ${_supabaseUser!.id}', tag: 'AuthStore');
 
         // Carregar dados do usuário da aplicação
+        AppConfig.log('📊 Carregando dados do usuário...', tag: 'AuthStore');
         await _loadAppUser();
 
         // Atualizar o estado para autenticado
-        AppConfig.log('🔄 AuthStore - Atualizando estado para authenticated',
-            tag: 'AuthStore');
+        AppConfig.log('🎯 Definindo estado como autenticado', tag: 'AuthStore');
         _setState(AuthState.authenticated);
         AppConfig.log('✅ AuthStore - Estado atualizado para authenticated',
             tag: 'AuthStore');
 
         return true;
       } else {
-        _setError('Credenciais inválidas');
+        AppConfig.log('❌ Resposta inválida do Supabase', tag: 'AuthStore');
+        _setError('Email ou senha incorretos');
         return false;
       }
     } on AuthException catch (e) {
-      AppConfig.log('Erro de autenticação: ${e.message}', tag: 'AuthStore');
+      AppConfig.log('💥 Erro de autenticação: ${e.message}', tag: 'AuthStore');
+      AppConfig.log('🔍 Tipo do erro: ${e.runtimeType}', tag: 'AuthStore');
       _setError(_parseAuthError(e.message));
       return false;
     } catch (e) {
-      AppConfig.log('Erro no login: $e', tag: 'AuthStore');
-      _setError('Erro interno. Tente novamente.');
+      AppConfig.log('💥 Erro no login: $e', tag: 'AuthStore');
+      AppConfig.log('🔍 Tipo do erro: ${e.runtimeType}', tag: 'AuthStore');
+      
+      String errorMessage = 'Erro interno. Tente novamente.';
+      if (e.toString().contains('Invalid login credentials')) {
+        errorMessage = 'Email ou senha incorretos';
+      } else if (e.toString().contains('Email not confirmed')) {
+        errorMessage = 'Email não confirmado. Verifique sua caixa de entrada.';
+      } else if (e.toString().contains('Too many requests')) {
+        errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
+      } else if (e.toString().contains('network')) {
+        errorMessage = 'Erro de conexão. Verifique sua internet.';
+      }
+      
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);
+      AppConfig.log('🏁 Processo de login finalizado', tag: 'AuthStore');
     }
   }
 

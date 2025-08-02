@@ -188,52 +188,103 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<QuotePriority>(
-                    value: _selectedPriority,
-                    decoration: const InputDecoration(
-                      labelText: 'Prioridade',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: QuotePriority.values.map((priority) {
-                      return DropdownMenuItem(
-                        value: priority,
-                        child: Text(_getPriorityLabel(priority)),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedPriority = value);
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _selectValidUntilDate(),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Válido até',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.calendar_today),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isMobile = constraints.maxWidth < 600;
+                if (isMobile) {
+                  return Column(
+                    children: [
+                      DropdownButtonFormField<QuotePriority>(
+                        value: _selectedPriority,
+                        decoration: const InputDecoration(
+                          labelText: 'Prioridade',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: QuotePriority.values.map((priority) {
+                          return DropdownMenuItem(
+                            value: priority,
+                            child: Text(_getPriorityLabel(priority)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedPriority = value);
+                          }
+                        },
                       ),
-                      child: Text(
-                        _validUntil != null
-                            ? _formatDate(_validUntil!)
-                            : 'Selecionar data',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: _validUntil != null
-                                  ? AppTheme.textColor
-                                  : AppTheme.textColor.withValues(alpha: 0.7),
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: () => _selectValidUntilDate(),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Válido até',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                          child: Text(
+                            _validUntil != null
+                                ? _formatDate(_validUntil!)
+                                : 'Selecionar data',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: _validUntil != null
+                                      ? AppTheme.textColor
+                                      : AppTheme.textColor.withValues(alpha: 0.7),
+                                ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<QuotePriority>(
+                          value: _selectedPriority,
+                          decoration: const InputDecoration(
+                            labelText: 'Prioridade',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: QuotePriority.values.map((priority) {
+                            return DropdownMenuItem(
+                              value: priority,
+                              child: Text(_getPriorityLabel(priority)),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedPriority = value);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _selectValidUntilDate(),
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: 'Válido até',
+                              border: OutlineInputBorder(),
+                              suffixIcon: Icon(Icons.calendar_today),
                             ),
+                            child: Text(
+                              _validUntil != null
+                                  ? _formatDate(_validUntil!)
+                                  : 'Selecionar data',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: _validUntil != null
+                                        ? AppTheme.textColor
+                                        : AppTheme.textColor.withValues(alpha: 0.7),
+                                  ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
+                    ],
+                  );
+                }
+              },
             ),
           ],
         ),
@@ -445,89 +496,108 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                 ),
               )
             else
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.backgroundColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 600;
+                  if (isMobile) {
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _items.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final item = _items[index];
+                        return _buildMobileItemCard(item, index);
+                      },
+                    );
+                  } else {
+                    return Column(
                       children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            'Descrição',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      AppTheme.textColor.withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w500,
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.backgroundColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  'Descrição',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color:
+                                            AppTheme.textColor.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'Qtd.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color:
+                                            AppTheme.textColor.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'Preço Unit.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color:
+                                            AppTheme.textColor.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'Total',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color:
+                                            AppTheme.textColor.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              const SizedBox(width: 48),
+                            ],
                           ),
                         ),
-                        Expanded(
-                          child: Text(
-                            'Qtd.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      AppTheme.textColor.withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Preço Unit.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      AppTheme.textColor.withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Total',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      AppTheme.textColor.withValues(alpha: 0.7),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        const SizedBox(width: 48),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _items.length,
-                    separatorBuilder: (context, index) =>
                         const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final item = _items[index];
-                      return _buildItemRow(item, index);
-                    },
-                  ),
-                ],
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _items.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final item = _items[index];
+                            return _buildItemRow(item, index);
+                          },
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
           ],
         ),
@@ -627,6 +697,153 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
     );
   }
 
+  Widget _buildMobileItemCard(QuoteItem item, int index) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.description,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppTheme.textColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => _editItem(index),
+                    icon: const Icon(Icons.edit, size: 20),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      foregroundColor: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () => _removeItem(index),
+                    icon: const Icon(Icons.delete, size: 20),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppTheme.errorColor.withValues(alpha: 0.1),
+                      foregroundColor: AppTheme.errorColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (item.notes != null && item.notes!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              item.notes!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textColor.withValues(alpha: 0.7),
+                  ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quantidade',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textColor.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${item.quantity} ${item.unit ?? ''}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Preço Unit.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textColor.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'R\$ ${item.unitPrice.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.textColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Total',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textColor.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'R\$ ${item.total.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFinancialInfo() {
     final subtotal = _items.fold<double>(0, (sum, item) => sum + item.total);
     final taxRate = double.tryParse(_taxRateController.text) ?? 0;
@@ -651,40 +868,80 @@ class _QuoteFormPageState extends State<QuoteFormPage> {
                   ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _taxRateController,
-                    decoration: const InputDecoration(
-                      labelText: 'Taxa de Impostos (%)',
-                      border: OutlineInputBorder(),
-                      suffixText: '%',
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 600) {
+                  // Layout mobile: campos empilhados verticalmente
+                  return Column(
+                    children: [
+                      TextFormField(
+                        controller: _taxRateController,
+                        decoration: const InputDecoration(
+                          labelText: 'Taxa de Impostos (%)',
+                          border: OutlineInputBorder(),
+                          suffixText: '%',
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        ],
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _discountController,
+                        decoration: const InputDecoration(
+                          labelText: 'Desconto Adicional',
+                          border: OutlineInputBorder(),
+                          prefixText: 'R\$ ',
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        ],
+                        onChanged: (_) => setState(() {}),
+                      ),
                     ],
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _discountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Desconto Adicional',
-                      border: OutlineInputBorder(),
-                      prefixText: 'R\$ ',
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                  );
+                } else {
+                  // Layout desktop: campos lado a lado
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _taxRateController,
+                          decoration: const InputDecoration(
+                            labelText: 'Taxa de Impostos (%)',
+                            border: OutlineInputBorder(),
+                            suffixText: '%',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          ],
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _discountController,
+                          decoration: const InputDecoration(
+                            labelText: 'Desconto Adicional',
+                            border: OutlineInputBorder(),
+                            prefixText: 'R\$ ',
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          ],
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
                     ],
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-              ],
+                  );
+                }
+              },
             ),
             const SizedBox(height: 24),
             Container(
@@ -1054,49 +1311,96 @@ class _ItemFormDialogState extends State<_ItemFormDialog> {
                 },
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _quantityController,
-                      decoration: const InputDecoration(
-                        labelText: 'Quantidade *',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*')),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth < 600) {
+                    return Column(
+                      children: [
+                        TextFormField(
+                          controller: _quantityController,
+                          decoration: const InputDecoration(
+                            labelText: 'Quantidade *',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d*')),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'A quantidade é obrigatória';
+                            }
+                            final quantity = double.tryParse(value);
+                            if (quantity == null || quantity <= 0) {
+                              return 'Quantidade inválida';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _unitController,
+                          decoration: const InputDecoration(
+                            labelText: 'Unidade *',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'A unidade é obrigatória';
+                            }
+                            return null;
+                          },
+                        ),
                       ],
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'A quantidade é obrigatória';
-                        }
-                        final quantity = double.tryParse(value);
-                        if (quantity == null || quantity <= 0) {
-                          return 'Quantidade inválida';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _unitController,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidade *',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'A unidade é obrigatória';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
+                    );
+                  } else {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _quantityController,
+                            decoration: const InputDecoration(
+                              labelText: 'Quantidade *',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*')),
+                            ],
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'A quantidade é obrigatória';
+                              }
+                              final quantity = double.tryParse(value);
+                              if (quantity == null || quantity <= 0) {
+                                return 'Quantidade inválida';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _unitController,
+                            decoration: const InputDecoration(
+                              labelText: 'Unidade *',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'A unidade é obrigatória';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(

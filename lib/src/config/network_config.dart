@@ -22,7 +22,7 @@ class NetworkConfig {
     await NetworkTester.instance.testSupabaseDns();
 
     if (networkTester._getCachedIp(domain) == null) {
-      print(
+      debugPrint(
           '⚠️ Não foi possível resolver o DNS do Supabase, tentando alternativa...');
       await networkTester._resolveDns('google.com');
       await networkTester._resolveDns(domain);
@@ -59,10 +59,10 @@ class NetworkTester {
   Future<bool> testSupabaseDns() async {
     try {
       final addresses = await _resolveDns('inhaxsjsjybpxtohfgmp.supabase.co');
-      print('🔍 Endereços DNS resolvidos: ${addresses.join(', ')}');
+      debugPrint('🔍 Endereços DNS resolvidos: ${addresses.join(', ')}');
       return addresses.isNotEmpty;
     } catch (e) {
-      print('❌ Erro ao resolver DNS do Supabase: $e');
+      debugPrint('❌ Erro ao resolver DNS do Supabase: $e');
       return false;
     }
   }
@@ -154,7 +154,7 @@ class NetworkTester {
       _lastConnectivityCheck = DateTime.now();
       return isConnected;
     } catch (e) {
-      print('❌ Erro ao testar conectividade com a internet: $e');
+      debugPrint('❌ Erro ao testar conectividade com a internet: $e');
       _lastKnownConnectivityStatus = false;
       _lastConnectivityCheck = DateTime.now();
       return false;
@@ -166,7 +166,7 @@ class NetworkTester {
     try {
       return await platform_network.testSupabaseConnectivity(supabaseUrl);
     } catch (e) {
-      print('❌ Erro ao testar conectividade com Supabase: $e');
+      debugPrint('❌ Erro ao testar conectividade com Supabase: $e');
       return false;
     }
   }
@@ -194,7 +194,7 @@ class NetworkTester {
 
     // No ambiente web, usar verificação simplificada
     if (kIsWeb) {
-      print('🌐 Ambiente web - usando verificação simplificada');
+      debugPrint('🌐 Ambiente web - usando verificação simplificada');
       final isConnected = await testSupabaseConnectivity(supabaseUrl);
       updateConnectivityStatus(isConnected);
       return isConnected;
@@ -205,7 +205,7 @@ class NetworkTester {
 
     // Se não conseguiu conectar, tentar métodos alternativos
     if (!isConnected) {
-      print(
+      debugPrint(
           '⚠️ Problemas de conectividade detectados, tentando métodos alternativos...');
 
       // Tentar resolver DNS primeiro
@@ -216,7 +216,7 @@ class NetworkTester {
         isConnected = await testSupabaseConnectivity(supabaseUrl);
       } else {
         // Se DNS falhou, tentar com IP direto
-        print('⚠️ DNS falhou, tentando IP direto...');
+        debugPrint('⚠️ DNS falhou, tentando IP direto...');
         try {
           final ip = _getCachedIp(uri.host);
 
@@ -224,7 +224,7 @@ class NetworkTester {
             isConnected = await testSupabaseConnectivity(supabaseUrl);
           }
         } catch (e) {
-          print('❌ Erro ao tentar IP direto: $e');
+          debugPrint('❌ Erro ao tentar IP direto: $e');
         }
       }
     }
@@ -241,7 +241,7 @@ class NetworkTester {
       final googleDns = await _resolveDns('google.com');
 
       if (googleDns.isEmpty) {
-        print(
+        debugPrint(
             '⚠️ Não foi possível resolver google.com - possível problema de DNS');
         return false;
       }
@@ -251,16 +251,16 @@ class NetworkTester {
 
       // Compara os resultados
       if (googleDns.isNotEmpty && supabaseDns.isEmpty) {
-        print(
+        debugPrint(
             '⚠️ DNS seletivo detectado: resolve google.com mas não supabase.co');
-        print(
+        debugPrint(
             '📋 Recomendação: Configure um DNS público como 8.8.8.8 ou 1.1.1.1');
         return true;
       }
 
       return false;
     } catch (e) {
-      print('❌ Erro ao verificar DNS personalizado: $e');
+      debugPrint('❌ Erro ao verificar DNS personalizado: $e');
       return false;
     }
   }

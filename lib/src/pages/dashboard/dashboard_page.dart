@@ -178,26 +178,33 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildMobileHeader(),
-          const SizedBox(height: 20),
-          _buildMobileWelcomeSection(),
-          const SizedBox(height: 20),
-          _buildMobileStatsGrid(),
-          const SizedBox(height: 20),
-          _buildMobileQuickActions(),
-          const SizedBox(height: 20),
-          _buildMobileRecentTickets(),
-          const SizedBox(height: 20),
-          _buildMobileActiveChats(),
-          const SizedBox(height: 20),
-          _buildMobilePerformanceMetrics(),
-          const SizedBox(height: 20),
-          _buildMobileQuickInsights(),
+    return RefreshIndicator(
+      onRefresh: _loadDashboardData,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                RepaintBoundary(child: _buildMobileHeader()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileWelcomeSection()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileStatsGrid()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileQuickActions()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileRecentTickets()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileActiveChats()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobilePerformanceMetrics()),
+                const SizedBox(height: 20),
+                RepaintBoundary(child: _buildMobileQuickInsights()),
+              ]),
+            ),
+          ),
         ],
       ),
     );
@@ -1472,47 +1479,60 @@ class _DashboardPageState extends State<DashboardPage>
         const SizedBox(height: 12),
         Consumer<DashboardStore>(
           builder: (context, dashboardStore, child) {
-            return GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.3,
-              children: [
-                _buildMobileStatCard(
-                  title: 'Total de Tickets',
-                  value: _formatNumber(dashboardStore.totalTickets),
-                  change: '+12%',
-                  isPositive: true,
-                  icon: PhosphorIcons.ticket(),
-                  color: const Color(0xFF3B82F6),
+            return SizedBox(
+              height: 200,
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.3,
                 ),
-                _buildMobileStatCard(
-                  title: 'Tickets Abertos',
-                  value: _formatNumber(dashboardStore.openTickets),
-                  change: '-5%',
-                  isPositive: false,
-                  icon: PhosphorIcons.warning(),
-                  color: const Color(0xFFEF4444),
-                ),
-                _buildMobileStatCard(
-                  title: 'Em Andamento',
-                  value: _formatNumber(dashboardStore.ticketStats['inProgress'] ?? 0),
-                  change: '+8%',
-                  isPositive: true,
-                  icon: PhosphorIcons.clock(),
-                  color: const Color(0xFFF59E0B),
-                ),
-                _buildMobileStatCard(
-                  title: 'Resolvidos',
-                  value: _formatNumber(dashboardStore.ticketStats['resolved'] ?? 0),
-                  change: '+15%',
-                  isPositive: true,
-                  icon: PhosphorIcons.checkCircle(),
-                  color: const Color(0xFF10B981),
-                ),
-              ],
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  switch (index) {
+                    case 0:
+                      return _OptimizedMobileStatCard(
+                        title: 'Total de Tickets',
+                        value: _formatNumber(dashboardStore.totalTickets),
+                        change: '+12%',
+                        isPositive: true,
+                        icon: PhosphorIcons.ticket(),
+                        color: const Color(0xFF3B82F6),
+                      );
+                    case 1:
+                      return _OptimizedMobileStatCard(
+                        title: 'Tickets Abertos',
+                        value: _formatNumber(dashboardStore.openTickets),
+                        change: '-5%',
+                        isPositive: false,
+                        icon: PhosphorIcons.warning(),
+                        color: const Color(0xFFEF4444),
+                      );
+                    case 2:
+                      return _OptimizedMobileStatCard(
+                        title: 'Em Andamento',
+                        value: _formatNumber(dashboardStore.ticketStats['inProgress'] ?? 0),
+                        change: '+8%',
+                        isPositive: true,
+                        icon: PhosphorIcons.clock(),
+                        color: const Color(0xFFF59E0B),
+                      );
+                    case 3:
+                      return _OptimizedMobileStatCard(
+                        title: 'Resolvidos',
+                        value: _formatNumber(dashboardStore.ticketStats['resolved'] ?? 0),
+                        change: '+15%',
+                        isPositive: true,
+                        icon: PhosphorIcons.checkCircle(),
+                        color: const Color(0xFF10B981),
+                      );
+                    default:
+                      return const SizedBox.shrink();
+                  }
+                },
+              ),
             );
           },
         ),
@@ -1870,34 +1890,31 @@ class _DashboardPageState extends State<DashboardPage>
                 ),
               ),
               const SizedBox(width: 12),
-              Expanded(
+              Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        'Ticket #${1000 + index}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      'Ticket #${1000 + index}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(height: 2),
-                    const Flexible(
-                      child: Text(
-                        'Problema com login no sistema',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF6B7280),
-                          height: 1.3,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    const Text(
+                      'Problema com login no sistema',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF6B7280),
+                        height: 1.3,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -2039,34 +2056,31 @@ class _DashboardPageState extends State<DashboardPage>
                 ],
               ),
               const SizedBox(width: 12),
-              Expanded(
+              Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        names[index],
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                    Text(
+                      names[index],
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(height: 4),
-                    Flexible(
-                      child: Text(
-                        messages[index],
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF6B7280),
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      messages[index],
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
+                        height: 1.4,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -2074,17 +2088,16 @@ class _DashboardPageState extends State<DashboardPage>
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(
-                    child: Text(
-                      times[index],
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+                  Text(
+                    times[index],
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF9CA3AF),
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -2391,4 +2404,142 @@ class _ActionItem {
     required this.bgColor,
     required this.onTap,
   });
+}
+
+class _OptimizedMobileStatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String change;
+  final bool isPositive;
+  final IconData icon;
+  final Color color;
+
+  const _OptimizedMobileStatCard({
+    required this.title,
+    required this.value,
+    required this.change,
+    required this.isPositive,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            color.withValues(alpha: 0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [color, color.withValues(alpha: 0.8)],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: isPositive
+                        ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                        : const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isPositive
+                            ? PhosphorIcons.trendUp()
+                            : PhosphorIcons.trendDown(),
+                        color: isPositive
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        size: 8,
+                      ),
+                      const SizedBox(width: 1),
+                      Text(
+                        change,
+                        style: TextStyle(
+                          color: isPositive
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1F2937),
+                height: 1.1,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6B7280),
+                height: 1.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

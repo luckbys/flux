@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class AppConfig {
   // ⚠️ IMPORTANTE: Substitua pelas suas credenciais reais do Supabase
   // Para obter essas informações:
@@ -76,7 +78,7 @@ class AppConfig {
     if (enableLogging) {
       final timestamp = DateTime.now().toIso8601String();
       final logTag = tag ?? 'AppConfig';
-      print('[$timestamp] [$logTag] $message');
+      debugPrint('[$timestamp] [$logTag] $message');
     }
   }
 

@@ -53,7 +53,7 @@ class ToastMessage extends StatelessWidget {
                 onTap: onDismiss,
                 child: Icon(
                   Icons.close,
-                  color: _getColor().withOpacity(0.7),
+                  color: _getColor().withValues(alpha: 0.7),
                   size: 18,
                 ),
               ),

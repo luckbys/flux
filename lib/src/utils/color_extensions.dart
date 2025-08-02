@@ -35,7 +35,7 @@ extension ColorExtensions on Color {
 
   /// Creates a new color with the specified alpha value.
   /// This replaces the deprecated withOpacity method.
-  Color withValues({double? alpha}) {
-    return alpha != null ? withOpacity(alpha) : this;
+  Color withAlpha(double alpha) {
+    return Color.fromRGBO(r.toInt(), g.toInt(), b.toInt(), alpha);
   }
 }

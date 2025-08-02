@@ -134,33 +134,47 @@ class SupabaseService {
     try {
       // Verificar se está inicializado
       if (!_isInitialized) {
+        AppConfig.log('❌ Supabase não inicializado!', tag: 'SupabaseService');
         throw Exception(
             'Supabase não está configurado corretamente. Verifique as credenciais em app_config.dart');
       }
 
-      AppConfig.log('Fazendo login: $email (Lembrar de mim: $rememberMe)',
-          tag: 'SupabaseService');
-
+      AppConfig.log('🔐 SupabaseService.signIn iniciado', tag: 'SupabaseService');
+      AppConfig.log('📧 Email: $email', tag: 'SupabaseService');
+      AppConfig.log('🔒 RememberMe: $rememberMe', tag: 'SupabaseService');
+      AppConfig.log('🌐 URL: ${AppConfig.supabaseUrl}', tag: 'SupabaseService');
+      
+      AppConfig.log('🚀 Chamando client.auth.signInWithPassword...', tag: 'SupabaseService');
+      
       final response = await client.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
+      AppConfig.log('📥 Resposta recebida do Supabase Auth', tag: 'SupabaseService');
+      AppConfig.log('👤 User ID: ${response.user?.id ?? "null"}', tag: 'SupabaseService');
+      AppConfig.log('📧 User Email: ${response.user?.email ?? "null"}', tag: 'SupabaseService');
+      AppConfig.log('🎫 Session válida: ${response.session?.accessToken != null}', tag: 'SupabaseService');
+      AppConfig.log('⏰ Session expira em: ${response.session?.expiresAt}', tag: 'SupabaseService');
+      
       if (response.user != null) {
-        AppConfig.log('Login realizado com sucesso!', tag: 'SupabaseService');
+        AppConfig.log('✅ Login realizado com sucesso!', tag: 'SupabaseService');
 
         // Se "Lembrar de mim" estiver ativado, configurar a sessão para persistir
         if (rememberMe && response.session != null) {
           // O Supabase Flutter já gerencia automaticamente a persistência da sessão
           // baseado na configuração do cliente. Por padrão, as sessões são persistentes.
-          AppConfig.log('Sessão configurada para persistir',
+          AppConfig.log('💾 Sessão será persistida (RememberMe ativo)',
               tag: 'SupabaseService');
         }
+      } else {
+        AppConfig.log('❌ Login falhou - usuário nulo', tag: 'SupabaseService');
       }
 
       return response;
     } catch (e) {
-      AppConfig.log('Erro no login: $e', tag: 'SupabaseService');
+      AppConfig.log('💥 Erro no SupabaseService.signIn: $e', tag: 'SupabaseService');
+      AppConfig.log('🔍 Tipo do erro: ${e.runtimeType}', tag: 'SupabaseService');
       rethrow;
     }
   }

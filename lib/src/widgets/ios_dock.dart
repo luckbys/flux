@@ -20,25 +20,22 @@ class IosDock extends StatefulWidget {
   State<IosDock> createState() => _IosDockState();
 }
 
-class _IosDockState extends State<IosDock> with TickerProviderStateMixin {
-  late List<AnimationController> _controllers;
+class _IosDockState extends State<IosDock> with SingleTickerProviderStateMixin {
+  late AnimationController _hoverController;
+  int _hoveredIndex = -1;
 
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(
-        widget.items.length,
-        (_) => AnimationController(
-              vsync: this,
-              duration: const Duration(milliseconds: 200),
-            ));
+    _hoverController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
   }
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
+    _hoverController.dispose();
     super.dispose();
   }
 
@@ -86,70 +83,72 @@ class _IosDockState extends State<IosDock> with TickerProviderStateMixin {
                 final index = entry.key;
                 final item = entry.value;
                 final isSelected = widget.currentIndex == item.index;
-                return MouseRegion(
-                  onEnter: (_) => _controllers[index].forward(),
-                  onExit: (_) => _controllers[index].reverse(),
-                  child: GestureDetector(
-                    onTap: () => widget.onTap(item.index),
-                    child: Tooltip(
-                      message: item.label,
-                      child: Semantics(
-                        label: item.label,
-                        selected: isSelected,
-                        child: AnimatedBuilder(
-                          animation: _controllers[index],
-                          builder: (context, child) {
-                            final scale = 1 + _controllers[index].value * 0.10;
-                            return Transform.scale(
-                              scale: scale,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                curve: Curves.easeInOut,
-                                padding: const EdgeInsets.all(2),
-                                transform: isSelected
-                                    ? (isHorizontal
-                                        ? Matrix4.translationValues(0, -4, 0)
-                                        : Matrix4.translationValues(-4, 0, 0))
-                                    : Matrix4.identity(),
-                                child: Flex(
-                                  direction: isHorizontal
-                                      ? Axis.vertical
-                                      : Axis.vertical,
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      isSelected ? item.fillIcon : item.icon,
-                                      color: isSelected
-                                          ? Theme.of(context).primaryColor
-                                          : Colors.grey[600],
-                                      size: isSelected ? 22 : 18,
-                                    ),
-                                    if (isSelected || !isHorizontal)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 1),
-                                        child: SizedBox(
-                                          width: isHorizontal ? 48 : 64,
-                                          child: Text(
-                                            item.label,
-                                            style: TextStyle(
-                                                fontSize: isHorizontal ? 8 : 9,
-                                                color: isSelected
-                                                    ? Theme.of(context)
-                                                        .primaryColor
-                                                    : Colors.grey[700]),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                return RepaintBoundary(
+                  child: MouseRegion(
+                    onEnter: (_) {
+                      setState(() {
+                        _hoveredIndex = index;
+                      });
+                      _hoverController.forward();
+                    },
+                    onExit: (_) {
+                      setState(() {
+                        _hoveredIndex = -1;
+                      });
+                      _hoverController.reverse();
+                    },
+                    child: GestureDetector(
+                      onTap: () => widget.onTap(item.index),
+                      child: Tooltip(
+                        message: item.label,
+                        child: Semantics(
+                          label: item.label,
+                          selected: isSelected,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 120),
+                            curve: Curves.easeOut,
+                            padding: const EdgeInsets.all(2),
+                            transform: isSelected
+                                ? (isHorizontal
+                                    ? Matrix4.translationValues(0, -3, 0)
+                                    : Matrix4.translationValues(-3, 0, 0))
+                                : Matrix4.identity(),
+                            child: AnimatedScale(
+                              scale: _hoveredIndex == index ? 1.08 : 1.0,
+                              duration: const Duration(milliseconds: 120),
+                              curve: Curves.easeOut,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    isSelected ? item.fillIcon : item.icon,
+                                    color: isSelected
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.grey[600],
+                                    size: isSelected ? 22 : 18,
+                                  ),
+                                  if (isSelected)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 1),
+                                      child: SizedBox(
+                                        width: isHorizontal ? 48 : 64,
+                                        child: Text(
+                                          item.label,
+                                          style: TextStyle(
+                                              fontSize: isHorizontal ? 8 : 9,
+                                              color: Theme.of(context).primaryColor,
+                                              fontWeight: FontWeight.w500),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                  ],
-                                ),
+                                    ),
+                                ],
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         ),
                       ),
                     ),

@@ -166,7 +166,7 @@ class WebSocketService {
       _startMockEvents();
 
       if (kDebugMode) {
-        print('WebSocket connected for user: $userId');
+        debugPrint('WebSocket connected for user: $userId');
       }
     } catch (e) {
       _setConnectionState(WebSocketConnectionState.error);
@@ -202,7 +202,7 @@ class WebSocketService {
     ));
 
     if (kDebugMode) {
-      print('WebSocket disconnected');
+      debugPrint('WebSocket disconnected');
     }
   }
 
@@ -392,7 +392,7 @@ class WebSocketService {
           _messageController.add(message);
         } catch (e) {
           if (kDebugMode) {
-            print('Error parsing message: $e');
+            debugPrint('Error parsing message: $e');
           }
         }
         break;
@@ -403,7 +403,7 @@ class WebSocketService {
           _ticketController.add(ticket);
         } catch (e) {
           if (kDebugMode) {
-            print('Error parsing ticket: $e');
+            debugPrint('Error parsing ticket: $e');
           }
         }
         break;
@@ -431,7 +431,7 @@ class WebSocketService {
   void _scheduleReconnect() {
     if (_reconnectAttempts >= _maxReconnectAttempts) {
       if (kDebugMode) {
-        print('Max reconnect attempts reached');
+        debugPrint('Max reconnect attempts reached');
       }
       return;
     }
@@ -446,7 +446,7 @@ class WebSocketService {
 
     _reconnectTimer = Timer(delay, () {
       if (kDebugMode) {
-        print(
+        debugPrint(
             'Attempting to reconnect... ($_reconnectAttempts/$_maxReconnectAttempts)');
       }
       // TODO: Implement actual reconnection logic

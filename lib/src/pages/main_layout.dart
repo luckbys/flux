@@ -326,27 +326,25 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildMobileLayout() {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: RepaintBoundary(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
-          switchInCurve: Curves.easeInOutCubic,
-          switchOutCurve: Curves.easeInOutCubic,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.04, 0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeInOutCubic,
-                )),
-                child: child,
-              ),
-            );
-          },
-          child: _cachedPages[_currentIndex] ?? _pages[_currentIndex],
+      body: SafeArea(
+        child: RepaintBoundary(
+          child: IndexedStack(
+            index: _currentIndex,
+            children: _pages.asMap().entries.map((entry) {
+              final index = entry.key;
+              final page = entry.value;
+
+              // Cache apenas a página atual e adjacentes para economizar memória
+              if ((_currentIndex - index).abs() <= 1) {
+                return RepaintBoundary(
+                  key: ValueKey('page_$index'),
+                  child: page,
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }).toList(),
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -444,7 +442,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Stack(
@@ -561,9 +559,11 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                                                   decoration: BoxDecoration(
                                                     color: notification.isRead
                                                         ? Colors.grey
-                                                            .withOpacity(0.2)
+                                                            .withValues(
+                                                                alpha: 0.2)
                                                         : AppTheme.primaryColor
-                                                            .withOpacity(0.2),
+                                                            .withValues(
+                                                                alpha: 0.2),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8),
@@ -632,6 +632,49 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               },
             ),
             const SizedBox(width: 16),
+            Consumer<AuthStore>(
+              builder: (context, authStore, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.errorColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: _handleLogout,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              PhosphorIcons.signOut(),
+                              color: AppTheme.errorColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Sair',
+                              style: TextStyle(
+                                color: AppTheme.errorColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 16),
           ],
         ),
       ),
@@ -645,6 +688,19 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       elevation: 0,
       foregroundColor: AppTheme.getTextColor(context),
       actions: [
+        // Botão de logout visível
+        Consumer<AuthStore>(
+          builder: (context, authStore, child) {
+            return IconButton(
+              onPressed: _handleLogout,
+              icon: Icon(
+                PhosphorIcons.signOut(),
+                color: AppTheme.errorColor,
+              ),
+              tooltip: 'Sair',
+            );
+          },
+        ),
         Consumer<AuthStore>(
           builder: (context, authStore, child) {
             return PopupMenuButton<String>(
@@ -791,14 +847,16 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildBottomNavigationBar() {
     return Consumer<NotificationStore>(
       builder: (context, notificationStore, child) {
-        return IosDock(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: _navItems,
+        return SafeArea(
+          child: IosDock(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            items: _navItems,
+          ),
         );
       },
     );

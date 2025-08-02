@@ -13,7 +13,92 @@ import '../../stores/ticket_store.dart';
 import '../../stores/auth_store.dart';
 import '../../stores/chat_store.dart';
 import '../../styles/app_theme.dart';
+import '../../config/app_config.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+// Constantes de estilo para evitar repetição
+class _TicketDetailsStyles {
+  // Gradientes
+  static const primaryGradient = LinearGradient(
+    colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const cardGradient = LinearGradient(
+    colors: [Colors.white, Color(0xFFFAFBFC)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const successGradient = LinearGradient(
+    colors: [
+      Color(0xFF10B981),
+      Color(0xFF059669),
+    ],
+  );
+  
+  // Sombras
+  static final primaryShadow = BoxShadow(
+    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+    blurRadius: 8,
+    offset: const Offset(0, 2),
+  );
+  
+  static final cardShadow = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.02),
+      blurRadius: 4,
+      offset: const Offset(0, 1),
+    ),
+  ];
+  
+  // Bordas
+  static final cardBorder = Border.all(
+    color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
+    width: 0.5,
+  );
+  
+  // Cores
+  static const primaryBlue = Color(0xFF3B82F6);
+  static const darkBlue = Color(0xFF1D4ED8);
+  static const textPrimary = Color(0xFF111827);
+  static const textSecondary = Color(0xFF6B7280);
+  static const textTertiary = Color(0xFF374151);
+  static const successGreen = Color(0xFF10B981);
+  static const backgroundGray = Color(0xFFF9FAFB);
+  
+  // Raios de borda
+  static const radiusSmall = 8.0;
+  static const radiusMedium = 12.0;
+  static const radiusLarge = 16.0;
+  static const radiusXLarge = 20.0;
+  
+  // Espaçamentos
+  static const paddingSmall = EdgeInsets.all(8.0);
+  static const paddingMedium = EdgeInsets.all(12.0);
+  static const paddingLarge = EdgeInsets.all(16.0);
+  static const paddingXLarge = EdgeInsets.all(20.0);
+}
+
+// Função utilitária para converter UUID em número amigável
+int _getTicketFriendlyNumber(String ticketId) {
+  // Criar hash consistente do UUID
+  final bytes = utf8.encode(ticketId);
+  int hash = 0;
+  for (int byte in bytes) {
+    hash = ((hash << 5) - hash + byte) & 0xFFFFFFFF;
+  }
+  // Converter para número positivo entre 1 e 99999
+  return (hash.abs() % 99999) + 1;
+}
 
 class TicketDetailsPage extends StatefulWidget {
   final Ticket ticket;
@@ -49,21 +134,19 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   late TabController _tabController;
 
   // Controladores de animação aprimorados
+  // Controladores de animação essenciais
   late AnimationController _fadeAnimationController;
   late AnimationController _slideAnimationController;
   late AnimationController _scaleAnimationController;
-  late AnimationController _pulseAnimationController;
-  late AnimationController _shimmerAnimationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _shimmerAnimation;
 
   // Estados para micro-interações
-  bool _isHoveringSend = false;
-  bool _isHoveringAttach = false;
+  final bool _isHoveringSend = false;
+  final bool _isHoveringAttach = false;
   int _selectedSuggestionIndex = -1;
+  bool _isChatExpanded = false;
 
   @override
   void initState() {
@@ -84,14 +167,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _pulseAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _shimmerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
+    // Controladores removidos: pulse, shimmer, expand (não essenciais)
 
     // Configurar animações
     _fadeAnimation = Tween<double>(
@@ -118,44 +194,28 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       curve: Curves.elasticOut,
     ));
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    // Animações removidas: pulse, shimmer, expand (simplificação)
 
-    _shimmerAnimation = Tween<double>(
-      begin: -1.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _shimmerAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _loadTicketChat();
-    _loadMessages();
-    _loadAISuggestions();
     _messageController.addListener(_onMessageChanged);
     _setupAutoRefresh();
 
     // Iniciar animações sequenciais
     _startEntranceAnimations();
+
+    // Carregar dados após o primeiro frame para evitar setState durante build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadTicketChat();
+        _loadMessages();
+        _loadAISuggestions();
+      }
+    });
   }
 
   void _startEntranceAnimations() async {
     await _fadeAnimationController.forward();
     await _slideAnimationController.forward();
     await _scaleAnimationController.forward();
-
-    // Aguardar um frame antes de iniciar animações contínuas
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _pulseAnimationController.repeat(reverse: true);
-        _shimmerAnimationController.repeat();
-      }
-    });
   }
 
   void _setupAutoRefresh() {
@@ -163,11 +223,14 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       if (mounted && _tabController.index == 1) {
         _refreshMessages();
       }
+      if (!mounted) {
+        timer.cancel();
+      }
     });
   }
 
   Future<void> _refreshMessages() async {
-    if (_isRefreshing) return;
+    if (_isRefreshing || !mounted) return;
 
     setState(() {
       _isRefreshing = true;
@@ -176,9 +239,11 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     try {
       await _loadMessages();
     } finally {
-      setState(() {
-        _isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
     }
   }
 
@@ -193,12 +258,12 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     _fadeAnimationController.dispose();
     _slideAnimationController.dispose();
     _scaleAnimationController.dispose();
-    _pulseAnimationController.dispose();
-    _shimmerAnimationController.dispose();
     super.dispose();
   }
 
   void _onMessageChanged() {
+    if (!mounted) return;
+
     if (_messageController.text.isNotEmpty && !_isTyping) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -223,14 +288,67 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   void _startTypingIndicator() {
     _typingTimer?.cancel();
     _typingTimer = Timer(const Duration(seconds: 2), () {
-      setState(() {
-        _isTyping = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+        });
+      }
     });
   }
 
   void _stopTypingIndicator() {
     _typingTimer?.cancel();
+  }
+
+  void _toggleChatExpansion() {
+    if (!mounted) return;
+
+    setState(() {
+      _isChatExpanded = !_isChatExpanded;
+    });
+  }
+
+  Widget _buildExpandButton() {
+    return Tooltip(
+      message: _isChatExpanded ? 'Recolher conversa' : 'Expandir conversa',
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: _isChatExpanded
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+              : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _isChatExpanded
+                ? const Color(0xFF3B82F6).withValues(alpha: 0.3)
+                : const Color(0xFFE5E7EB),
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _toggleChatExpansion,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  _isChatExpanded
+                      ? PhosphorIcons.arrowsInSimple()
+                      : PhosphorIcons.arrowsOutSimple(),
+                  color: _isChatExpanded
+                      ? const Color(0xFF3B82F6)
+                      : const Color(0xFF6B7280),
+                  size: 16,
+                  key: ValueKey(_isChatExpanded),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadTicketChat() async {
@@ -253,44 +371,120 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
         // Carregar mensagens do chat
         await chatStore.loadMessages(existingChat.id);
       } else {
-        // Criar um novo chat para o ticket
-        final newChat = await chatStore.createChat(
-          title: 'Ticket #${_ticket.id}',
-          type: ChatType.ticket,
-          participantIds: [
-            _ticket.customer.id
-          ], // Adicionar outros participantes conforme necessário
-        );
+        // Criar um novo chat para o ticket com melhor integração
+        final authStore = context.read<AuthStore>();
+        final currentUserId = authStore.appUser?.id;
 
-        if (newChat != null) {
-          setState(() {
-            _ticketChat = newChat;
-          });
+        if (currentUserId != null) {
+          final participantIds = [_ticket.customer.id];
+
+          // Adicionar o agente atual se estiver atribuído
+          if (_ticket.assignedAgent != null &&
+              _ticket.assignedAgent!.id != currentUserId) {
+            participantIds.add(_ticket.assignedAgent!.id);
+          }
+
+          // Adicionar o usuário atual se não estiver na lista
+          if (!participantIds.contains(currentUserId)) {
+            participantIds.add(currentUserId);
+          }
+
+          final newChat = await chatStore.createChat(
+            title: 'Ticket #${_getTicketFriendlyNumber(_ticket.id)} - ${_ticket.title}',
+            type: ChatType.ticket,
+            participantIds: participantIds,
+          );
+
+          if (newChat != null) {
+            setState(() {
+              _ticketChat = newChat;
+            });
+
+            AppConfig.log(
+                'Chat criado para ticket ${_ticket.id}: ${newChat.id}',
+                tag: 'TicketDetailsPage');
+          }
         }
       }
     } catch (e) {
-      // Handle error
+      AppConfig.log('Erro ao carregar/criar chat do ticket: $e',
+          tag: 'TicketDetailsPage');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  PhosphorIcons.warning(),
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'Erro ao carregar conversa: $e',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
     }
   }
 
   Future<void> _loadMessages() async {
-    final ticketStore = context.read<TicketStore>();
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final messages = await ticketStore.loadTicketMessages(_ticket.id);
-      setState(() {
-        _messages = messages;
-        _isLoading = false;
-      });
+      // Se temos um chat associado, carregar mensagens do chat
+      if (_ticketChat != null) {
+        final chatStore = context.read<ChatStore>();
+        await chatStore.loadMessages(_ticketChat!.id);
+
+        // Converter mensagens do chat para o formato esperado
+        final chatMessages = chatStore.selectedChatMessages;
+        if (mounted) {
+          setState(() {
+            _messages = chatMessages;
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Fallback: carregar mensagens do ticket diretamente
+        final ticketStore = context.read<TicketStore>();
+        final messages = await ticketStore.loadTicketMessages(_ticket.id);
+        if (mounted) {
+          setState(() {
+            _messages = messages;
+            _isLoading = false;
+          });
+        }
+      }
 
       // Scroll para o final após carregar mensagens
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottom();
-      });
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _scrollToBottom();
+          }
+        });
+      }
     } catch (e) {
+      AppConfig.log('Erro ao carregar mensagens: $e', tag: 'TicketDetailsPage');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -326,9 +520,11 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
           ),
         );
       }
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -361,8 +557,6 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     if (content.isEmpty) return;
 
     final authStore = context.read<AuthStore>();
-    final ticketStore = context.read<TicketStore>();
-
     if (authStore.appUser == null) return;
 
     setState(() {
@@ -374,11 +568,25 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     _stopTypingIndicator();
 
     try {
-      final success = await ticketStore.sendTicketMessage(
-        ticketId: _ticket.id,
-        senderId: authStore.appUser!.id,
-        content: content,
-      );
+      bool success = false;
+
+      // Se temos um chat associado, enviar mensagem pelo chat
+      if (_ticketChat != null) {
+        final chatStore = context.read<ChatStore>();
+        await chatStore.sendMessage(
+          chatId: _ticketChat!.id,
+          content: content,
+        );
+        success = true;
+      } else {
+        // Fallback: enviar mensagem pelo ticket
+        final ticketStore = context.read<TicketStore>();
+        success = await ticketStore.sendTicketMessage(
+          ticketId: _ticket.id,
+          senderId: authStore.appUser!.id,
+          content: content,
+        );
+      }
 
       if (success) {
         _messageController.clear();
@@ -466,6 +674,8 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
         }
       }
     } catch (e) {
+      AppConfig.log('Erro ao enviar mensagem: $e', tag: 'TicketDetailsPage');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -548,47 +758,22 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: _buildAppBar(),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF8FAFC),
-              Color(0xFFEFF6FF),
-            ],
-          ),
+          color: Color(0xFFF9FAFB),
         ),
         child: SafeArea(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([
-              _fadeAnimation,
-              _slideAnimation,
-              _scaleAnimation,
-            ]),
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    children: [
-                      _buildEnhancedTabBar(),
-                      Expanded(
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: [
-                            _buildEnhancedTicketDetailsTab(),
-                            _buildEnhancedChatTab(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              
+              if (isMobile) {
+                return _buildMobileLayout();
+              } else {
+                return _buildDesktopLayout();
+              }
             },
           ),
         ),
@@ -597,138 +782,329 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: Container(
+  Widget _buildMobileLayout() {
+    return DefaultTabController(
+      length: 3,
+      child: Column(
+        children: [
+          // Tab Bar
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF3B82F6),
-                  Color(0xFF1D4ED8),
-                ],
-              ),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: FloatingActionButton(
-              onPressed: _showQuickActions
-                  ? null
-                  : () {
-                      setState(() {
-                        _showQuickActions = !_showQuickActions;
-                      });
-                    },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Icon(
-                _showQuickActions ? PhosphorIcons.x() : PhosphorIcons.plus(),
-                color: Colors.white,
-                size: 24,
+            child: TabBar(
+              indicator: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorPadding: const EdgeInsets.all(4),
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: const Color(0xFF6B7280),
+              labelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: [
+                Tab(
+                  height: 48,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(PhosphorIcons.info(), size: 18),
+                      const SizedBox(width: 6),
+                      const Text('Detalhes'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  height: 48,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(PhosphorIcons.chatCircle(), size: 18),
+                      const SizedBox(width: 6),
+                      const Text('Chat'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  height: 48,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(PhosphorIcons.gear(), size: 18),
+                      const SizedBox(width: 6),
+                      const Text('Ações'),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEnhancedTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+          // Tab Views
+          Expanded(
+            child: TabBarView(
+              children: [
+                // Detalhes Tab
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildMobileTicketHeaderCard(),
+                      const SizedBox(height: 16),
+                      _buildMobileProblemDescriptionCard(),
+                      const SizedBox(height: 16),
+                      _buildMobileClientInfoCard(),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+                // Chat Tab
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _buildMobileChatSection(),
+                      ),
+                      _buildMobileChatInput(),
+                    ],
+                  ),
+                ),
+                // Ações Tab
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildMobileQuickActionsCard(),
+                      const SizedBox(height: 16),
+                      _buildMobileAttachmentsCard(),
+                      const SizedBox(height: 16),
+                      _buildMobileTimelineCard(),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: const Color(0xFF6B7280),
-          indicator: BoxDecoration(
-            color: const Color(0xFF3B82F6),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          indicatorPadding: const EdgeInsets.all(6),
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Main Content - 2/3 width
+          Expanded(
+            flex: 2,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Icon(PhosphorIcons.ticket(), size: 18),
-                  const SizedBox(width: 8),
-                  const Text('Detalhes', overflow: TextOverflow.ellipsis),
+                  _buildTicketHeaderCard(),
+                  const SizedBox(height: 24),
+                  _buildProblemDescriptionCard(),
+                  const SizedBox(height: 24),
+                  _buildChatSectionCard(),
+                  const SizedBox(height: 24),
+                  _buildTimelineCard(),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
-            Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+          ),
+          const SizedBox(width: 32),
+          // Sidebar - 1/3 width
+          Expanded(
+            flex: 1,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Stack(
+                  _buildClientInfoCard(),
+                  const SizedBox(height: 24),
+                  _buildQuickActionsCard(),
+                  const SizedBox(height: 24),
+                  _buildAttachmentsCard(),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return Container(
+       decoration: BoxDecoration(
+         gradient: _TicketDetailsStyles.primaryGradient,
+         borderRadius: BorderRadius.circular(_TicketDetailsStyles.radiusLarge),
+         boxShadow: [
+           BoxShadow(
+             color: _TicketDetailsStyles.primaryBlue.withValues(alpha: 0.3),
+             blurRadius: 12,
+             offset: const Offset(0, 4),
+           ),
+         ],
+       ),
+      child: FloatingActionButton(
+        onPressed: _showQuickActions
+            ? null
+            : () {
+                setState(() {
+                  _showQuickActions = !_showQuickActions;
+                });
+              },
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Icon(
+          _showQuickActions ? PhosphorIcons.x() : PhosphorIcons.plus(),
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  // Mobile-specific widgets
+  Widget _buildMobileTicketHeaderCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: _TicketDetailsStyles.cardGradient,
+        borderRadius: BorderRadius.circular(_TicketDetailsStyles.radiusXLarge),
+        boxShadow: _TicketDetailsStyles.cardShadow,
+        border: _TicketDetailsStyles.cardBorder,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: _TicketDetailsStyles.primaryGradient,
+                    borderRadius: BorderRadius.circular(_TicketDetailsStyles.radiusMedium),
+                    boxShadow: [_TicketDetailsStyles.primaryShadow],
+                  ),
+                  child: Icon(
+                    PhosphorIcons.ticket(),
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(PhosphorIcons.chatCircle(), size: 18),
-                      if (_messages.isNotEmpty)
-                        Positioned(
-                          right: -2,
-                          top: -2,
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF22C55E),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _messages.length > 9
-                                    ? '9+'
-                                    : '${_messages.length}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _TicketDetailsStyles.textSecondary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(_TicketDetailsStyles.radiusSmall),
+                        ),
+                        child: Text(
+                          'ID: ${_getTicketFriendlyNumber(_ticket.id)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _TicketDetailsStyles.textSecondary,
+                            letterSpacing: 0.5,
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _ticket.title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: _TicketDetailsStyles.textPrimary,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatusChip(),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildPriorityChip(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: _TicketDetailsStyles.paddingMedium,
+              decoration: BoxDecoration(
+                color: _TicketDetailsStyles.successGreen.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(_TicketDetailsStyles.radiusMedium),
+                border: Border.all(
+                  color: _TicketDetailsStyles.successGreen.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    PhosphorIcons.calendar(),
+                    size: 16,
+                    color: _TicketDetailsStyles.successGreen,
+                  ),
                   const SizedBox(width: 8),
-                  const Text('Chat', overflow: TextOverflow.ellipsis),
+                  Text(
+                    'Criado em ${_formatDate(_ticket.createdAt)}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _TicketDetailsStyles.successGreen,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -738,29 +1114,1065 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     );
   }
 
-  Widget _buildEnhancedTicketDetailsTab() {
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
+  // Método unificado para criar chips de status e prioridade
+  Widget _buildChip({
+    required String text,
+    required Color color,
+    required IconData icon,
+    bool isCompact = false,
+  }) {
+    final padding = isCompact 
+        ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+        : const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+    final iconSize = isCompact ? 12.0 : 14.0;
+    final fontSize = isCompact ? 10.0 : 12.0;
+    
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: iconSize,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip({bool isCompact = false}) {
+    return _buildChip(
+      text: _getStatusName(_ticket.status),
+      color: _getStatusColor(_ticket.status),
+      icon: _getStatusIcon(_ticket.status),
+      isCompact: isCompact,
+    );
+  }
+
+  Widget _buildPriorityChip({bool isCompact = false}) {
+    return _buildChip(
+      text: _getPriorityName(_ticket.priority),
+      color: _getPriorityColor(_ticket.priority),
+      icon: _getPriorityIcon(_ticket.priority),
+      isCompact: isCompact,
+    );
+  }
+
+  Widget _buildMobileProblemDescriptionCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.white, Color(0xFFFAFBFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                _buildEnhancedTicketInfoCard(),
-                const SizedBox(height: 20),
-                _buildEnhancedDescriptionCard(),
-                const SizedBox(height: 20),
-                _buildActivityTimeline(),
-                const SizedBox(height: 20),
-                _buildEnhancedAISuggestionsSection(),
-                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    PhosphorIcons.fileText(),
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'Descrição do Problema',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _ticket.description,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF374151),
+                  height: 1.6,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileClientInfoCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.white, Color(0xFFFAFBFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    PhosphorIcons.user(),
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'Cliente',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildMobileInfoRow(
+              PhosphorIcons.user(),
+              'Nome',
+              _ticket.customer.name,
+            ),
+            const SizedBox(height: 12),
+            _buildMobileInfoRow(
+              PhosphorIcons.envelope(),
+              'Email',
+              _ticket.customer.email,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileInfoRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: const Color(0xFF10B981),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF6B7280),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
               ],
             ),
           ),
-        );
-      },
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileChatSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.white, Color(0xFFFAFBFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    PhosphorIcons.chatCircle(),
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'Conversas',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '${_messages.length} mensagens',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _messages.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          PhosphorIcons.chatCircle(),
+                          size: 48,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Nenhuma mensagem ainda',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Inicie uma conversa',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      return _buildMobileChatMessage(message);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileChatMessage(dynamic message) {
+    final isUser = message.sender == 'user';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isUser) ...[
+             CircleAvatar(
+               radius: 16,
+               backgroundColor: const Color(0xFF3B82F6),
+               child: Icon(
+                 PhosphorIcons.user(),
+                 size: 16,
+                 color: Colors.white,
+               ),
+             ),
+             const SizedBox(width: 8),
+           ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isUser
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                message.content,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isUser ? Colors.white : const Color(0xFF111827),
+                ),
+              ),
+            ),
+          ),
+          if (isUser) ...[
+             const SizedBox(width: 8),
+             CircleAvatar(
+               radius: 16,
+               backgroundColor: const Color(0xFF10B981),
+               child: Icon(
+                 PhosphorIcons.user(),
+                 size: 16,
+                 color: Colors.white,
+               ),
+             ),
+           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileChatInput() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.white, Color(0xFFFAFBFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border(
+          top: BorderSide(
+            color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: const Color(0xFFE5E7EB).withValues(alpha: 0.8),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _messageController,
+                decoration: InputDecoration(
+                  hintText: 'Digite sua mensagem...',
+                  hintStyle: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 15,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                ),
+                maxLines: null,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: _sendMessage,
+              icon: Icon(
+                PhosphorIcons.paperPlaneTilt(),
+                color: Colors.white,
+                size: 22,
+              ),
+              padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileQuickActionsCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  PhosphorIcons.lightning(),
+                  color: const Color(0xFFF59E0B),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Ações Rápidas',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _updateTicketStatus(TicketStatus.resolved),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  foregroundColor: const Color(0xFF10B981),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(PhosphorIcons.checkCircle(), size: 18),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Resolver Ticket',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _updateTicketStatus(TicketStatus.inProgress),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  foregroundColor: const Color(0xFF3B82F6),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(PhosphorIcons.play(), size: 18),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Iniciar Atendimento',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _updateTicketStatus(TicketStatus.closed),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B7280).withValues(alpha: 0.1),
+                  foregroundColor: const Color(0xFF6B7280),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(PhosphorIcons.x(), size: 18),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Fechar Ticket',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+  Widget _buildMobileAttachmentsCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  PhosphorIcons.paperclip(),
+                  color: const Color(0xFF8B5CF6),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Anexos',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    PhosphorIcons.file(),
+                    size: 32,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Nenhum anexo',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileTimelineCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(
+          color: Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  PhosphorIcons.clockCounterClockwise(),
+                  color: const Color(0xFF6366F1),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Timeline',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildMobileTimelineItem(
+              PhosphorIcons.plus(),
+              'Ticket criado',
+              _formatDate(_ticket.createdAt),
+              const Color(0xFF10B981),
+            ),
+            if (_ticket.status != TicketStatus.open)
+                _buildMobileTimelineItem(
+                  PhosphorIcons.play(),
+                  'Atendimento iniciado',
+                  _formatDate(_ticket.updatedAt ?? _ticket.createdAt),
+                  const Color(0xFF3B82F6),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileTimelineItem(
+    IconData icon,
+    String title,
+    String time,
+    Color color,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              icon,
+              size: 14,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                Text(
+                  time,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTicketHeaderCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.ticket(),
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _ticket.title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      Text(
+                        'Ticket #${_getTicketFriendlyNumber(_ticket.id)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Prazo',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    Text(
+                      _formatDate(_ticket.createdAt),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color:
+                        _getStatusColor(_ticket.status).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getStatusIcon(_ticket.status),
+                        size: 12,
+                        color: _getStatusColor(_ticket.status),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _getStatusName(_ticket.status),
+                        style: TextStyle(
+                          color: _getStatusColor(_ticket.status),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getPriorityColor(_ticket.priority)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getPriorityIcon(_ticket.priority),
+                        size: 12,
+                        color: _getPriorityColor(_ticket.priority),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _getPriorityName(_ticket.priority),
+                        style: TextStyle(
+                          color: _getPriorityColor(_ticket.priority),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -839,7 +2251,7 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Ticket #${_ticket.id.substring(0, 8)}',
+                              'Ticket #${_getTicketFriendlyNumber(_ticket.id)}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -1032,151 +2444,164 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     );
   }
 
-  Widget _buildEnhancedDescriptionCard() {
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white,
-                  Color(0xFFFAFBFC),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+  Widget _buildProblemDescriptionCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.fileText(),
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.05),
-                  blurRadius: 40,
-                  offset: const Offset(0, 16),
+                const SizedBox(width: 12),
+                const Text(
+                  'Descrição do Problema',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
                 ),
               ],
-              border: Border.all(
-                color: const Color(0xFFE2E8F0),
-                width: 1,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _ticket.description,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF374151),
+                  height: 1.5,
+                ),
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF6366F1),
-                              Color(0xFF4F46E5),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF6366F1)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          PhosphorIcons.fileText(),
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Text(
-                        'Descrição do Problema',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1F2937),
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                    ),
-                    child: Text(
-                      _ticket.description,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF374151),
-                        height: 1.6,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildEnhancedChatTab() {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        _fadeAnimation,
-        _slideAnimation,
-        _shimmerAnimation,
-      ]),
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFF8FAFC),
-                  Color(0xFFEFF6FF),
+  Widget _buildChatSectionCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.chatCircle(),
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Row(
+                  children: [
+                    const Text(
+                      'Conversas',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    if (_messages.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const Spacer(),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '${_messages.length} mensagens',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _buildExpandButton(),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: _isChatExpanded
+                  ? MediaQuery.of(context).size.height * 0.6
+                  : null,
+              child: Column(
+                children: [
+                  if (_isChatExpanded)
+                    Expanded(
+                      child: _buildChatMessagesSection(),
+                    )
+                  else
+                    _buildChatMessagesSection(),
+                  const SizedBox(height: 16),
+                  _buildChatInputSection(),
                 ],
               ),
             ),
-            child: Column(
-              children: [
-                _buildChatHeader(),
-                if (_showParticipants) _buildParticipantsHeader(),
-                Expanded(
-                  child: _buildChatMessagesSection(),
-                ),
-                _buildChatInputSection(),
-                if (_showAISuggestions && _aiSuggestions.isNotEmpty)
-                  _buildAISuggestionsBar(),
-              ],
-            ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
@@ -1419,6 +2844,426 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   }
 
   PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(120),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          
+          if (isMobile) {
+            return _buildMobileAppBarContent();
+          } else {
+            return _buildDesktopAppBarContent();
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildMobileAppBarContent() {
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  const Color(0xFFF8FAFC),
+                  const Color(0xFFF1F5F9).withValues(alpha: 0.8),
+                ],
+                stops: const [0.0, 0.6, 1.0],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.05),
+                  blurRadius: 40,
+                  offset: const Offset(0, 8),
+                  spreadRadius: -8,
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  children: [
+                    // Top Row - Back button and actions
+                    Row(
+                      children: [
+                        _buildMobileBackButton(),
+                        const Spacer(),
+                        _buildMobileActionButtons(),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Bottom Row - Status chips and title
+                    _buildMobileHeaderContent(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopAppBarContent() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(PhosphorIcons.arrowLeft()),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Row(
+        children: [
+          _buildStatusChip(isCompact: true),
+          const SizedBox(width: 8),
+          _buildPriorityChip(isCompact: true),
+          const SizedBox(width: 12),
+          Text(
+            'ID: ${_getTicketFriendlyNumber(_ticket.id)}',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _ticket.title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        _buildActionButton(
+          icon: PhosphorIcons.arrowClockwise(),
+          color: const Color(0xFF6B7280),
+          onPressed: _refreshMessages,
+          isLoading: _isRefreshing,
+          tooltip: 'Atualizar',
+        ),
+        _buildActionButton(
+          icon: PhosphorIcons.shareNetwork(),
+          color: const Color(0xFF6B7280),
+          onPressed: () => _shareTicket(),
+          tooltip: 'Compartilhar',
+        ),
+        _buildActionButton(
+          icon: PhosphorIcons.dotsThreeVertical(),
+          color: const Color(0xFF6B7280),
+          onPressed: () => _showActionMenu(context),
+          tooltip: 'Menu',
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () {
+            if (_tabController.index != 1) {
+              _tabController.animateTo(1);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B82F6),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: const Text('Chat'),
+        ),
+        const SizedBox(width: 16),
+      ],
+    );
+  }
+
+  Widget _buildMobileBackButton() {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFE5E7EB).withValues(alpha: 0.6),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  blurRadius: 8,
+                  offset: const Offset(0, -1),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    PhosphorIcons.arrowLeft(),
+                    color: const Color(0xFF374151),
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileActionButtons() {
+    return Row(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.95),
+                const Color(0xFFF8FAFC),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.6),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _isRefreshing ? null : _refreshMessages,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: _isRefreshing
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            const Color(0xFF6B7280),
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        PhosphorIcons.arrowClockwise(),
+                        color: const Color(0xFF6B7280),
+                        size: 18,
+                      ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF3B82F6),
+                const Color(0xFF2563EB),
+                const Color(0xFF1D4ED8),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+              BoxShadow(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                blurRadius: 32,
+                offset: const Offset(0, 8),
+                spreadRadius: -4,
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                if (_tabController.index != 1) {
+                  _tabController.animateTo(1);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: Icon(
+                  PhosphorIcons.chatCircle(),
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.95),
+                const Color(0xFFF8FAFC),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.6),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _showActionMenu(context),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: Icon(
+                  PhosphorIcons.dotsThreeVertical(),
+                  color: const Color(0xFF6B7280),
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  Widget _buildMobileHeaderContent() {
+    return AnimatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Status and Priority Chips
+              Row(
+                children: [
+                  _buildStatusChip(isCompact: true),
+                  const SizedBox(width: 8),
+                  _buildPriorityChip(isCompact: true),
+                  const Spacer(),
+                  _buildMobileTicketId(),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Title
+              Text(
+                _ticket.title,
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  height: 1.3,
+                  letterSpacing: -0.5,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+
+
+
+  Widget _buildMobileTicketId() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6B7280).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF6B7280).withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        '#${_getTicketFriendlyNumber(_ticket.id)}',
+        style: const TextStyle(
+          color: Color(0xFF6B7280),
+          fontWeight: FontWeight.w600,
+          fontSize: 11,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildDesktopAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -1426,165 +3271,103 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFF8FAFC),
-              Color(0xFFEFF6FF),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFE2E8F0),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Icon(
             PhosphorIcons.arrowLeft(),
-            color: const Color(0xFF374151),
+            color: const Color(0xFF6B7280),
             size: 20,
           ),
         ),
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      title: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _getStatusColor(_ticket.status).withValues(alpha: 0.1),
-                      _getStatusColor(_ticket.status).withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color:
-                        _getStatusColor(_ticket.status).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Text(
-                  'Ticket #${_ticket.id.substring(0, 6)}',
-                  style: TextStyle(
-                    color: _getStatusColor(_ticket.status),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 10,
-                    letterSpacing: 0.3,
-                  ),
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _getStatusName(_ticket.status),
+              style: const TextStyle(
+                color: Color(0xFF10B981),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  _ticket.title,
-                  style: const TextStyle(
-                    color: Color(0xFF1F2937),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    letterSpacing: -0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: _getStatusColor(_ticket.status),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _getStatusColor(_ticket.status)
-                          .withValues(alpha: 0.4),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _getPriorityName(_ticket.priority),
+              style: const TextStyle(
+                color: Color(0xFF3B82F6),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
-              const SizedBox(width: 3),
-              Flexible(
-                child: Text(
-                  _getStatusName(_ticket.status),
-                  style: TextStyle(
-                    color: _getStatusColor(_ticket.status),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Ticket #${_getTicketFriendlyNumber(_ticket.id)}: ${_ticket.title}',
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
               ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                decoration: BoxDecoration(
-                  color: _getPriorityColor(_ticket.priority)
-                      .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(
-                    color: _getPriorityColor(_ticket.priority)
-                        .withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Text(
-                  _getPriorityName(_ticket.priority),
-                  style: TextStyle(
-                    color: _getPriorityColor(_ticket.priority),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 8,
-                  ),
-                ),
-              ),
-            ],
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
       actions: [
+        _buildActionButton(
+          icon: PhosphorIcons.arrowClockwise(),
+          color: const Color(0xFF6B7280),
+          onPressed: _refreshMessages,
+          isLoading: _isRefreshing,
+          tooltip: 'Atualizar',
+        ),
+        const SizedBox(width: 8),
+        _buildActionButton(
+          icon: PhosphorIcons.share(),
+          color: const Color(0xFF6B7280),
+          onPressed: _shareTicket,
+          tooltip: 'Compartilhar',
+        ),
+        const SizedBox(width: 8),
+        _buildActionButton(
+          icon: PhosphorIcons.dotsThreeVertical(),
+          color: const Color(0xFF6B7280),
+          onPressed: () => _showActionMenu(context),
+          tooltip: 'Mais opções',
+        ),
+        const SizedBox(width: 8),
         Container(
-          margin: const EdgeInsets.only(right: 8),
-          child: Row(
-            children: [
-              _buildActionButton(
-                icon: PhosphorIcons.arrowClockwise(),
-                color: const Color(0xFF10B981),
-                onPressed: _refreshMessages,
-                isLoading: _isRefreshing,
-                tooltip: 'Atualizar',
-              ),
-              const SizedBox(width: 4),
-              _buildActionButton(
-                icon: PhosphorIcons.pencil(),
-                color: const Color(0xFF3B82F6),
-                onPressed: _editTicket,
-                tooltip: 'Editar',
-              ),
-              const SizedBox(width: 4),
-              _buildActionButton(
-                icon: PhosphorIcons.dotsThreeVertical(),
-                color: const Color(0xFF6B7280),
-                onPressed: () => _showActionMenu(context),
-                tooltip: 'Mais opções',
-              ),
-            ],
+          margin: const EdgeInsets.only(right: 16),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Focar na seção de chat
+            },
+            icon: Icon(PhosphorIcons.chatCircle(), size: 16),
+            label: const Text('Chat'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF374151),
+              elevation: 0,
+              side: const BorderSide(color: Color(0xFFD1D5DB)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
           ),
         ),
       ],
@@ -1679,44 +3462,46 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                if (_ticket.status != TicketStatus.inProgress)
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  if (_ticket.status != TicketStatus.inProgress)
+                    _buildMenuAction(
+                      'Iniciar Atendimento',
+                      PhosphorIcons.play(),
+                      const Color(0xFF3B82F6),
+                      () => _handleMenuAction('in_progress'),
+                    ),
+                  if (_ticket.status != TicketStatus.resolved)
+                    _buildMenuAction(
+                      'Marcar como Resolvido',
+                      PhosphorIcons.check(),
+                      const Color(0xFF10B981),
+                      () => _handleMenuAction('resolved'),
+                    ),
+                  if (_ticket.status != TicketStatus.closed)
+                    _buildMenuAction(
+                      'Fechar Ticket',
+                      PhosphorIcons.x(),
+                      const Color(0xFF6B7280),
+                      () => _handleMenuAction('closed'),
+                    ),
                   _buildMenuAction(
-                    'Iniciar Atendimento',
-                    PhosphorIcons.play(),
-                    const Color(0xFF3B82F6),
-                    () => _handleMenuAction('in_progress'),
+                    'Compartilhar',
+                    PhosphorIcons.share(),
+                    const Color(0xFF8B5CF6),
+                    () => _shareTicket(),
                   ),
-                if (_ticket.status != TicketStatus.resolved)
                   _buildMenuAction(
-                    'Marcar como Resolvido',
-                    PhosphorIcons.check(),
-                    const Color(0xFF10B981),
-                    () => _handleMenuAction('resolved'),
+                    'Exportar',
+                    PhosphorIcons.download(),
+                    const Color(0xFFF59E0B),
+                    () => _exportTicket(),
                   ),
-                if (_ticket.status != TicketStatus.closed)
-                  _buildMenuAction(
-                    'Fechar Ticket',
-                    PhosphorIcons.x(),
-                    const Color(0xFF6B7280),
-                    () => _handleMenuAction('closed'),
-                  ),
-                _buildMenuAction(
-                  'Compartilhar',
-                  PhosphorIcons.share(),
-                  const Color(0xFF8B5CF6),
-                  () => _shareTicket(),
-                ),
-                _buildMenuAction(
-                  'Exportar',
-                  PhosphorIcons.download(),
-                  const Color(0xFFF59E0B),
-                  () => _exportTicket(),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -1894,35 +3679,19 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
 
   Widget _buildChatMessagesSection() {
     if (_messages.isEmpty) {
-      return Center(
+      return Container(
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: Icon(
-                PhosphorIcons.chatCircle(),
-                size: 40,
-                color: const Color(0xFF3B82F6),
-              ),
+            Icon(
+              PhosphorIcons.chatCircle(),
+              color: const Color(0xFFD1D5DB),
+              size: 48,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             const Text(
               'Nenhuma mensagem ainda',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Inicie uma conversa com o cliente',
               style: TextStyle(
                 fontSize: 14,
                 color: Color(0xFF6B7280),
@@ -1933,313 +3702,379 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       );
     }
 
-    return ListView.builder(
-      controller: _messagesScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: _messages.length,
-      itemBuilder: (context, index) {
-        final message = _messages[index];
-        final isFromCurrentUser =
-            message.sender.id == context.read<AuthStore>().appUser?.id;
-        return ChatMessageBubble(
-          message: message,
-          isFromCurrentUser: isFromCurrentUser,
-        );
-      },
+    Widget chatContent = Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header do chat
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.chatCircle(),
+                    color: Colors.white,
+                    size: 12,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Conversa do Ticket',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const Spacer(),
+                if (_isChatExpanded)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Expandido',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF10B981),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                if (_isTyping && _isChatExpanded)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFFF59E0B),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Digitando...',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFFF59E0B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Área de mensagens
+          if (_isChatExpanded)
+            Expanded(
+              child: ListView.builder(
+                controller: _messagesScrollController,
+                padding: const EdgeInsets.all(12),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  final authStore = context.read<AuthStore>();
+                  final currentUserId = authStore.appUser?.id;
+
+                  // Verificações de segurança
+                  if (message.sender.name.isEmpty || message.content.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildMessageBubble(
+                      message.sender.name,
+                      message.content,
+                      _formatMessageTime(message.createdAt),
+                      message.sender.id == currentUserId,
+                      const Color(0xFF3B82F6),
+                    ),
+                  );
+                },
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Mostrar apenas as últimas 3 mensagens quando não expandido
+                  ..._messages
+                      .take(3)
+                      .where((message) =>
+                          message.sender.name.isNotEmpty &&
+                          message.content.isNotEmpty)
+                      .map((message) {
+                    final authStore = context.read<AuthStore>();
+                    final currentUserId = authStore.appUser?.id;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _buildMessageBubble(
+                        message.sender.name,
+                        message.content,
+                        _formatMessageTime(message.createdAt),
+                        message.sender.id == currentUserId,
+                        const Color(0xFF3B82F6),
+                      ),
+                    );
+                  }),
+                  if (_messages.length > 3)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${_messages.length - 3} mensagens anteriores...',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return _isChatExpanded ? Expanded(child: chatContent) : chatContent;
+  }
+
+  Widget _buildMessageBubble(String sender, String content, String time,
+      bool isFromCurrentUser, Color avatarColor) {
+    // Verificações de segurança
+    if (sender.isEmpty) sender = 'Usuário';
+    if (content.isEmpty) content = 'Mensagem vazia';
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isFromCurrentUser) ...[
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: avatarColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                sender.isNotEmpty ? sender.substring(0, 1).toUpperCase() : 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isFromCurrentUser
+                      ? const Color(0xFFDBEAFE)
+                      : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          sender,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          time,
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      content,
+                      style: const TextStyle(
+                        color: Color(0xFF374151),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (isFromCurrentUser) ...[
+          const SizedBox(width: 12),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: avatarColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                sender.isNotEmpty ? sender.substring(0, 1).toUpperCase() : 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
   Widget _buildChatInputSection() {
-    return AnimatedBuilder(
-      animation: Listenable.merge([
-        _fadeAnimation,
-        _pulseAnimation,
-      ]),
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: const Border(
-              top: BorderSide(
-                color: Color(0xFFE2E8F0),
-                width: 1,
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              if (_isTyping)
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    children: [
-                      AnimatedBuilder(
-                        animation: _pulseAnimation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _pulseAnimation.value,
-                            child: Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF10B981),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'Digitando...',
-                        style: TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
+    return Container(
+      constraints: const BoxConstraints(
+        minHeight: 60,
+        maxHeight: 120,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              maxLines: null,
+              minLines: 1,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
+              decoration: InputDecoration(
+                hintText: 'Digite sua mensagem...',
+                hintStyle: const TextStyle(
+                  color: Color(0xFF9CA3AF),
+                  fontSize: 14,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                suffixIcon: IconButton(
+                  onPressed: _showAttachmentOptions,
+                  icon: Icon(
+                    PhosphorIcons.paperclip(),
+                    color: const Color(0xFF9CA3AF),
+                    size: 20,
                   ),
                 ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildInputActionButton(
-                    icon: PhosphorIcons.paperclip(),
-                    onPressed: _showAttachmentOptions,
-                    isHovering: _isHoveringAttach,
-                    onHoverChanged: (hovering) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _isHoveringAttach = hovering;
-                          });
-                        }
-                      });
-                    },
-                    tooltip: 'Anexar arquivo',
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        maxHeight: 80,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _isSendingMessage ? null : _sendMessage,
+              icon: _isSendingMessage
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFF8FAFC),
-                            Color(0xFFEFF6FF),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFE2E8F0),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 3,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _messageController,
-                        focusNode: _messageFocusNode,
-                        maxLines: null,
-                        textInputAction: TextInputAction.newline,
-                        onSubmitted: (_) => _sendMessage(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF1F2937),
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Digite sua mensagem...',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 12,
-                          ),
-                          filled: false,
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                      ),
+                    )
+                  : Icon(
+                      PhosphorIcons.paperPlaneRight(),
+                      size: 16,
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  _buildSendButton(),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildInputActionButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required bool isHovering,
-    required ValueChanged<bool> onHoverChanged,
-    String? tooltip,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isHovering
-              ? [
-                  const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  const Color(0xFF1D4ED8).withValues(alpha: 0.1),
-                ]
-              : [
-                  const Color(0xFFF8FAFC),
-                  const Color(0xFFEFF6FF),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isHovering
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.3)
-              : const Color(0xFFE2E8F0),
-          width: 1,
-        ),
-        boxShadow: isHovering
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+              label: Text(_isSendingMessage ? 'Enviando...' : 'Enviar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ]
-            : null,
-      ),
-      child: MouseRegion(
-        onEnter: (_) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            onHoverChanged(true);
-          });
-        },
-        onExit: (_) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            onHoverChanged(false);
-          });
-        },
-        child: IconButton(
-          onPressed: onPressed,
-          icon: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            child: Icon(
-              icon,
-              color: isHovering
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFF6B7280),
-              size: 16,
+              ),
             ),
           ),
-          tooltip: tooltip,
-          padding: const EdgeInsets.all(6),
-          constraints: const BoxConstraints(
-            minWidth: 28,
-            minHeight: 28,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSendButton() {
-    final hasText = _messageController.text.trim().isNotEmpty;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: hasText && !_isSendingMessage
-              ? [
-                  const Color(0xFF3B82F6),
-                  const Color(0xFF1D4ED8),
-                ]
-              : [
-                  const Color(0xFFE5E7EB),
-                  const Color(0xFFD1D5DB),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: hasText && !_isSendingMessage
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: MouseRegion(
-        onEnter: (_) {
-          if (hasText && !_isSendingMessage) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() {
-                  _isHoveringSend = true;
-                });
-              }
-            });
-          }
-        },
-        onExit: (_) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              setState(() {
-                _isHoveringSend = false;
-              });
-            }
-          });
-        },
-        child: IconButton(
-          onPressed: (hasText && !_isSendingMessage) ? _sendMessage : null,
-          icon: _isSendingMessage
-              ? const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
-                    _isHoveringSend
-                        ? PhosphorIcons.paperPlaneTilt()
-                        : PhosphorIcons.paperPlaneRight(),
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-          tooltip: 'Enviar mensagem',
-          padding: const EdgeInsets.all(6),
-          constraints: const BoxConstraints(
-            minWidth: 32,
-            minHeight: 32,
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -2505,22 +4340,27 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     }
   }
 
-  String _formatDate(DateTime date) {
+  // Utilitário unificado para formatação de datas
+  static String formatRelativeDate(DateTime date, {bool compact = false}) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes}m atrás';
+        return compact ? '${difference.inMinutes}m' : '${difference.inMinutes}m atrás';
       }
-      return '${difference.inHours}h atrás';
+      return compact ? '${difference.inHours}h' : '${difference.inHours}h atrás';
     } else if (difference.inDays == 1) {
       return 'Ontem';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d atrás';
+      return compact ? '${difference.inDays}d' : '${difference.inDays}d atrás';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
+  }
+
+  String _formatDate(DateTime date) {
+    return formatRelativeDate(date);
   }
 
   // Métodos auxiliares para ícones
@@ -2744,81 +4584,64 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
     );
   }
 
-  // Widget para timeline de atividades
-  Widget _buildActivityTimeline() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF8B5CF6).withValues(alpha: 0.05),
-            const Color(0xFF3B82F6).withValues(alpha: 0.05),
+  Widget _buildTimelineCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFA78BFA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    PhosphorIcons.clock(),
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Timeline de Atividades',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: [
+                _buildTimelineItem(
+                  'Ticket criado',
+                  _formatDateForTimeline(_ticket.createdAt),
+                  PhosphorIcons.plus(),
+                  const Color(0xFF3B82F6),
+                ),
+                _buildTimelineItem(
+                  'Última atualização',
+                  _formatDateForTimeline(_ticket.updatedAt),
+                  PhosphorIcons.pencil(),
+                  const Color(0xFF6B7280),
+                ),
+              ],
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  PhosphorIcons.clockCounterClockwise(),
-                  color: const Color(0xFF8B5CF6),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Timeline de Atividades',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1F2937),
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildTimelineItem(
-            'Ticket criado',
-            _formatDateForTimeline(_ticket.createdAt),
-            PhosphorIcons.plus(),
-            const Color(0xFF3B82F6),
-            isFirst: true,
-          ),
-          if (_ticket.status != TicketStatus.open)
-            _buildTimelineItem(
-              'Status alterado para ${_getStatusName(_ticket.status)}',
-              _formatDateForTimeline(_ticket.updatedAt),
-              _getStatusIcon(_ticket.status),
-              _getStatusColor(_ticket.status),
-            ),
-          if (_ticket.assignedAgent != null)
-            _buildTimelineItem(
-              'Atribuído para ${_ticket.assignedAgent!.name}',
-              _formatDateForTimeline(_ticket.updatedAt),
-              PhosphorIcons.userGear(),
-              const Color(0xFF10B981),
-            ),
-          _buildTimelineItem(
-            'Última atualização',
-            _formatDateForTimeline(_ticket.updatedAt),
-            PhosphorIcons.clockCounterClockwise(),
-            const Color(0xFF6B7280),
-            isLast: true,
-          ),
-        ],
       ),
     );
   }
@@ -2903,7 +4726,11 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   }
 
   String _formatMessageTime(DateTime time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    try {
+      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '00:00';
+    }
   }
 
   String _formatDateSeparator(DateTime date) {
@@ -2938,12 +4765,16 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
   }
 
   void _scrollToBottom() {
-    if (_messagesScrollController.hasClients) {
+    if (!mounted || !_messagesScrollController.hasClients) return;
+
+    try {
       _messagesScrollController.animateTo(
         _messagesScrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
+    } catch (e) {
+      // Ignorar erros de scroll
     }
   }
 
@@ -3173,6 +5004,277 @@ class _TicketDetailsPageState extends State<TicketDetailsPage>
       },
     );
   }
+
+  Widget _buildClientInfoCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Cliente',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _ticket.customer.name.substring(0, 1).toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _ticket.customer.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        _ticket.customer.email,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    PhosphorIcons.user(),
+                    color: const Color(0xFF10B981),
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 1,
+              color: const Color(0xFFE5E7EB),
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: [
+                _buildInfoRow('Status:', _getStatusName(_ticket.status),
+                    _getStatusColor(_ticket.status)),
+                const SizedBox(height: 12),
+                _buildInfoRow('Prioridade:', _getPriorityName(_ticket.priority),
+                    _getPriorityColor(_ticket.priority)),
+                const SizedBox(height: 12),
+                _buildInfoRow('Criado em:', _formatDate(_ticket.createdAt),
+                    const Color(0xFF6B7280)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF6B7280),
+            fontSize: 14,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionsCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ações Rápidas',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: [
+                _buildQuickActionButton(
+                  text: 'Responder',
+                  icon: PhosphorIcons.arrowLeft(),
+                  color: const Color(0xFF3B82F6),
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionButton(
+                  text: 'Encaminhar',
+                  icon: PhosphorIcons.arrowUp(),
+                  color: const Color(0xFF8B5CF6),
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionButton(
+                  text: 'Resolver',
+                  icon: PhosphorIcons.check(),
+                  color: const Color(0xFF10B981),
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionButton(
+                  text: 'Fechar',
+                  icon: PhosphorIcons.x(),
+                  color: const Color(0xFFEF4444),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton({
+    required String text,
+    required IconData icon,
+    required Color color,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          // Implementar ações
+        },
+        icon: Icon(icon, color: color, size: 16),
+        label: Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF374151),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFD1D5DB)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          alignment: Alignment.centerLeft,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentsCard() {
+    return Card(
+      elevation: 0,
+      shadowColor: Colors.black.withValues(alpha: 0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Anexos',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  Icon(
+                    PhosphorIcons.paperclip(),
+                    color: const Color(0xFFD1D5DB),
+                    size: 48,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Nenhum anexo encontrado',
+                    style: TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Implementar adição de anexos
+                    },
+                    icon: Icon(PhosphorIcons.plus(), size: 16),
+                    label: const Text('Adicionar'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFD1D5DB)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class ChatMessageBubble extends StatelessWidget {
@@ -3263,7 +5365,7 @@ class ChatMessageBubble extends StatelessWidget {
                     '${message.createdAt.hour.toString().padLeft(2, '0')}:${message.createdAt.minute.toString().padLeft(2, '0')}',
                     style: TextStyle(
                       color: isFromCurrentUser
-                          ? Colors.white.withOpacity(0.7)
+                          ? Colors.white.withValues(alpha: 0.7)
                           : const Color(0xFF6B7280),
                       fontSize: 9,
                       fontWeight: FontWeight.w500,

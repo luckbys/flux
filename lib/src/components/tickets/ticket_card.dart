@@ -99,7 +99,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
         vertical: isMobile ? 4 : 6,
       ),
       constraints: BoxConstraints(
-        minHeight: isMobile ? 120 : 140, // Reduzido significativamente
+        minHeight: isMobile ? 90 : 110, // Reduzido ainda mais
         maxWidth: isDesktop ? 600 : double.infinity,
       ),
       decoration: _buildCardDecoration(isMobile),
@@ -109,7 +109,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
           onTap: widget.onTap,
           child: Padding(
-            padding: EdgeInsets.all(isMobile ? 12 : 16), // Reduzido
+            padding: EdgeInsets.all(isMobile ? 8 : 12), // Reduzido ainda mais
             child: _buildCardContent(isMobile, isTablet, isDesktop),
           ),
         ),
@@ -144,20 +144,20 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildHeader(isMobile),
-        SizedBox(height: isMobile ? 8 : 12), // Reduzido
+        SizedBox(height: isMobile ? 6 : 8), // Reduzido ainda mais
         _buildTitle(isMobile),
         if (!widget.isCompact) ...[
-          SizedBox(height: isMobile ? 6 : 8), // Reduzido
+          SizedBox(height: isMobile ? 4 : 6), // Reduzido ainda mais
           _buildDescription(isMobile),
         ],
-        SizedBox(height: isMobile ? 8 : 12), // Reduzido
+        SizedBox(height: isMobile ? 6 : 8), // Reduzido ainda mais
         _buildCompactMetadata(isMobile), // Novo método mais compacto
         if (widget.ticket.tags.isNotEmpty && !widget.isCompact) ...[
-          SizedBox(height: isMobile ? 8 : 10), // Reduzido
+          SizedBox(height: isMobile ? 6 : 8), // Reduzido ainda mais
           _buildTags(isMobile),
         ],
         if (!widget.isCompact && widget.showActions) ...[
-          SizedBox(height: isMobile ? 8 : 12), // Reduzido
+          SizedBox(height: isMobile ? 6 : 8), // Reduzido ainda mais
           _buildActions(isMobile),
         ],
       ],
@@ -169,8 +169,8 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
       children: [
         // Status indicator - mais compacto
         Container(
-          width: 3, // Reduzido
-          height: isMobile ? 32 : 36, // Reduzido
+          width: 2, // Reduzido ainda mais
+          height: isMobile ? 24 : 28, // Reduzido ainda mais
           decoration: BoxDecoration(
             color: _getStatusColor(widget.ticket.status),
             borderRadius: BorderRadius.circular(1.5),
@@ -183,7 +183,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
             ],
           ),
         ),
-        SizedBox(width: isMobile ? 8 : 12), // Reduzido
+        SizedBox(width: isMobile ? 6 : 8), // Reduzido ainda mais
 
         // Ticket ID - mais compacto
         Container(
@@ -204,16 +204,16 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
             children: [
               Icon(
                 PhosphorIcons.ticket(),
-                size: isMobile ? 10 : 12, // Reduzido
+                size: isMobile ? 8 : 10, // Reduzido ainda mais
                 color: AppTheme.primaryColor,
               ),
-              SizedBox(width: isMobile ? 3 : 4), // Reduzido
+              SizedBox(width: isMobile ? 2 : 3), // Reduzido ainda mais
               Text(
                 '#${widget.ticket.id.substring(0, 8)}',
                 style: TextStyle(
                   color: AppTheme.primaryColor,
                   fontWeight: FontWeight.w700,
-                  fontSize: isMobile ? 9 : 11, // Reduzido
+                  fontSize: isMobile ? 8 : 10, // Reduzido ainda mais
                   fontFamily: 'monospace',
                 ),
               ),
@@ -226,8 +226,8 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
         // Priority badge - mais compacto
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 6 : 8,
-            vertical: isMobile ? 3 : 4,
+            horizontal: isMobile ? 4 : 6,
+            vertical: isMobile ? 2 : 3,
           ),
           decoration: BoxDecoration(
             color: _getPriorityColor(widget.ticket.priority).withOpacity(0.1),
@@ -242,16 +242,16 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
             children: [
               Icon(
                 _getPriorityIcon(widget.ticket.priority),
-                size: isMobile ? 10 : 12, // Reduzido
+                size: isMobile ? 8 : 10, // Reduzido ainda mais
                 color: _getPriorityColor(widget.ticket.priority),
               ),
-              SizedBox(width: isMobile ? 3 : 4), // Reduzido
+              SizedBox(width: isMobile ? 2 : 3), // Reduzido ainda mais
               Text(
                 widget.ticket.priority.name,
                 style: TextStyle(
                   color: _getPriorityColor(widget.ticket.priority),
                   fontWeight: FontWeight.w600,
-                  fontSize: isMobile ? 8 : 10, // Reduzido
+                  fontSize: isMobile ? 7 : 9, // Reduzido ainda mais
                 ),
               ),
             ],
@@ -265,12 +265,12 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
     return Text(
       widget.ticket.title,
       style: TextStyle(
-        fontSize: isMobile ? 14 : 16, // Reduzido
+        fontSize: isMobile ? 13 : 15, // Reduzido ainda mais
         fontWeight: FontWeight.w700,
         color: AppTheme.getTextColor(context),
-        height: 1.2, // Reduzido
+        height: 1.1, // Reduzido ainda mais
       ),
-      maxLines: 2,
+      maxLines: 1, // Reduzido para 1 linha
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -279,11 +279,11 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
     return Text(
       widget.ticket.description,
       style: TextStyle(
-        fontSize: isMobile ? 12 : 13, // Reduzido
+        fontSize: isMobile ? 11 : 12, // Reduzido ainda mais
         color: AppTheme.getTextColor(context).withOpacity(0.7),
-        height: 1.3, // Reduzido
+        height: 1.2, // Reduzido ainda mais
       ),
-      maxLines: 2, // Reduzido de 3 para 2
+      maxLines: 1, // Reduzido para 1 linha
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -297,7 +297,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
           child: Row(
             children: [
               CircleAvatar(
-                radius: isMobile ? 12 : 14, // Reduzido
+                radius: isMobile ? 10 : 12, // Reduzido ainda mais
                 backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                 child: Text(
                   widget.ticket.customer.name.isNotEmpty
@@ -306,11 +306,11 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
                   style: TextStyle(
                     color: AppTheme.primaryColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: isMobile ? 10 : 12, // Reduzido
+                    fontSize: isMobile ? 9 : 11, // Reduzido ainda mais
                   ),
                 ),
               ),
-              SizedBox(width: isMobile ? 6 : 8), // Reduzido
+              SizedBox(width: isMobile ? 4 : 6), // Reduzido ainda mais
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +321,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
                       style: TextStyle(
                         color: AppTheme.getTextColor(context),
                         fontWeight: FontWeight.w600,
-                        fontSize: isMobile ? 11 : 12, // Reduzido
+                        fontSize: isMobile ? 10 : 11, // Reduzido ainda mais
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -330,7 +330,7 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
                       widget.ticket.customer.email,
                       style: TextStyle(
                         color: AppTheme.getTextColor(context).withOpacity(0.6),
-                        fontSize: isMobile ? 9 : 10, // Reduzido
+                        fontSize: isMobile ? 8 : 9, // Reduzido ainda mais
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -345,8 +345,8 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
         // Status badge - mais compacto
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 6 : 8,
-            vertical: isMobile ? 3 : 4,
+            horizontal: isMobile ? 4 : 6,
+            vertical: isMobile ? 2 : 3,
           ),
           decoration: BoxDecoration(
             color: _getStatusColor(widget.ticket.status).withOpacity(0.1),
@@ -360,27 +360,27 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 6, // Reduzido
-                height: 6, // Reduzido
+                width: 4, // Reduzido ainda mais
+                height: 4, // Reduzido ainda mais
                 decoration: BoxDecoration(
                   color: _getStatusColor(widget.ticket.status),
                   shape: BoxShape.circle,
                 ),
               ),
-              SizedBox(width: isMobile ? 3 : 4), // Reduzido
+              SizedBox(width: isMobile ? 2 : 3), // Reduzido ainda mais
               Text(
                 widget.ticket.status.name,
                 style: TextStyle(
                   color: _getStatusColor(widget.ticket.status),
                   fontWeight: FontWeight.w600,
-                  fontSize: isMobile ? 8 : 10, // Reduzido
+                  fontSize: isMobile ? 7 : 9, // Reduzido ainda mais
                 ),
               ),
             ],
           ),
         ),
 
-        SizedBox(width: isMobile ? 8 : 12), // Reduzido
+        SizedBox(width: isMobile ? 6 : 8), // Reduzido ainda mais
 
         // Date - mais compacto
         Row(
@@ -388,15 +388,15 @@ class _TicketCardState extends State<TicketCard> with TickerProviderStateMixin {
           children: [
             Icon(
               PhosphorIcons.clock(),
-              size: isMobile ? 10 : 12, // Reduzido
+              size: isMobile ? 8 : 10, // Reduzido ainda mais
               color: AppTheme.getTextColor(context).withOpacity(0.5),
             ),
-            SizedBox(width: isMobile ? 3 : 4), // Reduzido
+            SizedBox(width: isMobile ? 2 : 3), // Reduzido ainda mais
             Text(
               _formatDate(widget.ticket.createdAt),
               style: TextStyle(
                 color: AppTheme.getTextColor(context).withOpacity(0.5),
-                fontSize: isMobile ? 9 : 10, // Reduzido
+                fontSize: isMobile ? 8 : 9, // Reduzido ainda mais
               ),
             ),
           ],

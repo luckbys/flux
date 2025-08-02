@@ -167,7 +167,7 @@ class NotificationService {
     _updateNotificationList();
 
     if (kDebugMode) {
-      print('📱 Notification: ${notification.title}');
+      debugPrint('📱 Notification: ${notification.title}');
     }
 
     // Simulate system notification
@@ -520,7 +520,7 @@ class NotificationService {
   void _simulateSystemNotification(AppNotification notification) {
     // Em um app real, aqui seria chamada a API de notificações nativas
     if (kDebugMode) {
-      print(
+      debugPrint(
           '🔔 System Notification: ${notification.title} - ${notification.body}');
     }
 
@@ -538,11 +538,11 @@ class NotificationService {
         // Verificar se o navegador suporta notificações
         // Nota: Esta é uma implementação simplificada
         // Em produção, você usaria um package como flutter_local_notifications
-        print('🌐 Web notification: ${notification.title}');
+        debugPrint('🌐 Web notification: ${notification.title}');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao mostrar notificação web: $e');
+        debugPrint('❌ Erro ao mostrar notificação web: $e');
       }
     }
   }
